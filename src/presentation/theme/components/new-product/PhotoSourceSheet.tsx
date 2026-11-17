@@ -11,13 +11,22 @@ interface Props {
   onClose: () => void;
 }
 
-// Fase 3 / 16-18 como hoja inferior.
-const PhotoSourceSheet = ({ visible, modelName, remaining, onAdd, onClose }: Props) => {
+const PhotoSourceSheet = ({
+  visible,
+  modelName,
+  remaining,
+  onAdd,
+  onClose,
+}: Props) => {
   // Cambiar la llave reinicia el contenido en "menú" cada vez que se abre.
   const [openCount, setOpenCount] = useState(0);
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} onShow={() => setOpenCount((n) => n + 1)}>
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      onShow={() => setOpenCount((n) => n + 1)}
+    >
       <PhotoSourceContent
         key={openCount}
         modelName={modelName}

@@ -1,7 +1,7 @@
 export type BusinessRole = "owner" | "admin" | "staff";
 
 // GET /accounts/my-tenants/ (definición UserTenant del Swagger).
-// Cada negocio es un tenant con su propia base de datos (schema).
+// Cada negocio es un tenant con su propia base de datos
 export interface Business {
   tenant_id: number;
   tenant_slug: string;

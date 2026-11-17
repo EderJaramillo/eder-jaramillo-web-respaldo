@@ -1,5 +1,14 @@
-import { Colors, fonts, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { saveBasicData, updateDraft } from "@/features/products/newProductSlice";
+import {
+  Colors,
+  fonts,
+  iconStroke,
+  radius,
+  spacing,
+} from "@/config/theme/theme";
+import {
+  saveBasicData,
+  updateDraft,
+} from "@/features/products/newProductSlice";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import CategorySheet from "@/presentation/theme/components/new-product/CategorySheet";
 import NewProductLayout from "@/presentation/theme/components/new-product/NewProductLayout";
@@ -14,7 +23,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const MAX_NAME_LENGTH = 100;
 
-// Fase 3 / 01 y 02.
 const BasicDataScreen = () => {
   const dispatch = useAppDispatch();
   const { name, category, isSaving } = useAppSelector((s) => s.newProduct);
@@ -22,7 +30,8 @@ const BasicDataScreen = () => {
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
 
   const nameError = submitted && !name.trim() ? "Campo requerido" : null;
-  const categoryError = submitted && !category ? "Selecciona una categoría" : null;
+  const categoryError =
+    submitted && !category ? "Selecciona una categoría" : null;
 
   const onContinue = async () => {
     setSubmitted(true);
@@ -73,7 +82,10 @@ const BasicDataScreen = () => {
           accessibilityRole="button"
           accessibilityLabel="Categoría"
         >
-          <Text style={[styles.selectText, category && styles.selectValue]} numberOfLines={1}>
+          <Text
+            style={[styles.selectText, category && styles.selectValue]}
+            numberOfLines={1}
+          >
             {category?.name ?? "Elige una categoría"}
           </Text>
           <ChevronDown

@@ -1,5 +1,9 @@
 import { Colors, fonts, radius, spacing } from "@/config/theme/theme";
-import { hasPrice, saveAllModels, setVariantPrice } from "@/features/products/newProductSlice";
+import {
+  hasPrice,
+  saveAllModels,
+  setVariantPrice,
+} from "@/features/products/newProductSlice";
 import AppBar from "@/presentation/theme/components/AppBar";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import PricePreview from "@/presentation/theme/components/new-product/PricePreview";
@@ -14,15 +18,22 @@ import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 const COLUMN_WIDTH = 84;
 const LABEL_WIDTH = 72;
 
-// Fase 3 / 28: precios de todas las variantes. Filas = variantes, columnas = modelos.
 const PriceTableScreen = () => {
   const dispatch = useAppDispatch();
   const { name, models, isSaving, error } = useAppSelector((s) => s.newProduct);
 
   // Las filas son los nombres de variante que existen en cualquier modelo (CH, M, G…).
-  const rows = [...new Set(models.flatMap((m) => m.variants.map((v) => v.name)))];
-  const costs = [...new Set(models.flatMap((m) => m.variants.filter(hasPrice).map((v) => v.cost)))];
-  const prices = models.flatMap((m) => m.variants.filter(hasPrice).map((v) => Number(v.price)));
+  const rows = [
+    ...new Set(models.flatMap((m) => m.variants.map((v) => v.name))),
+  ];
+  const costs = [
+    ...new Set(
+      models.flatMap((m) => m.variants.filter(hasPrice).map((v) => v.cost)),
+    ),
+  ];
+  const prices = models.flatMap((m) =>
+    m.variants.filter(hasPrice).map((v) => Number(v.price)),
+  );
 
   const onDone = async () => {
     const result = await dispatch(saveAllModels());
@@ -41,7 +52,14 @@ const PriceTableScreen = () => {
           actionLabel="Cerrar"
         />
       }
-      footer={<ThemedButton title="Listo" loading={isSaving} loadingTitle="Guardando…" onPress={onDone} />}
+      footer={
+        <ThemedButton
+          title="Listo"
+          loading={isSaving}
+          loadingTitle="Guardando…"
+          onPress={onDone}
+        />
+      }
     >
       <ThemedText variant="title">{name}</ThemedText>
       {models.length > 2 && (
@@ -56,18 +74,29 @@ const PriceTableScreen = () => {
                 Variante
               </ThemedText>
               {models.map((model) => (
-                <ThemedText key={model.key} variant="label" style={styles.cell} numberOfLines={1}>
+                <ThemedText
+                  key={model.key}
+                  variant="label"
+                  style={styles.cell}
+                  numberOfLines={1}
+                >
                   {model.name}
                 </ThemedText>
               ))}
             </View>
             {rows.map((rowName) => (
               <View key={rowName} style={[styles.row, styles.bodyRow]}>
-                <ThemedText variant="bodyStrong" style={styles.labelCell} numberOfLines={1}>
+                <ThemedText
+                  variant="bodyStrong"
+                  style={styles.labelCell}
+                  numberOfLines={1}
+                >
                   {rowName}
                 </ThemedText>
                 {models.map((model) => {
-                  const variant = model.variants.find((v) => v.name === rowName);
+                  const variant = model.variants.find(
+                    (v) => v.name === rowName,
+                  );
                   return variant ? (
                     <View key={model.key} style={styles.cell}>
                       <TextInput
@@ -106,8 +135,8 @@ const PriceTableScreen = () => {
       </View>
 
       <ThemedText variant="caption" color={Colors.textSecondary}>
-        {costs.length === 1 ? `Costo de cada variante: $${costs[0]}. ` : ""}Toca un precio para
-        ajustarlo.
+        {costs.length === 1 ? `Costo de cada variante: $${costs[0]}. ` : ""}Toca
+        un precio para ajustarlo.
       </ThemedText>
 
       {prices.length > 0 && <PricePreview price={Math.min(...prices)} />}

@@ -1,6 +1,15 @@
+import {
+  login,
+  logout,
+  restoreSession,
+  type SignedInPayload,
+} from "@/features/auth/authSlice";
 import { saveActiveBusiness } from "@/features/auth/authStorage";
-import { login, logout, restoreSession, type SignedInPayload } from "@/features/auth/authSlice";
-import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import type { Business } from "./businessTypes";
 
 interface BusinessState {
@@ -13,11 +22,15 @@ const initialState: BusinessState = {
   activeSlug: null,
 };
 
-// Por ahora cada usuario solo tiene un negocio: si hay uno, se entra directo.
-// Si llegan varios, la app muestra el selector "Elige tu negocio".
-function pickInitialBusiness({ businesses, rememberedBusinessSlug }: SignedInPayload) {
+// Validacion del negocio para entrar directo
+function pickInitialBusiness({
+  businesses,
+  rememberedBusinessSlug,
+}: SignedInPayload) {
   if (businesses.length === 1) return businesses[0].tenant_slug;
-  const remembered = businesses.find((b) => b.tenant_slug === rememberedBusinessSlug);
+  const remembered = businesses.find(
+    (b) => b.tenant_slug === rememberedBusinessSlug,
+  );
   return remembered?.tenant_slug ?? null;
 }
 

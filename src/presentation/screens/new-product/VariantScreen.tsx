@@ -9,7 +9,9 @@ import {
 import AppBar from "@/presentation/theme/components/AppBar";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import BarcodeField from "@/presentation/theme/components/new-product/BarcodeField";
-import OfferSheet, { OfferRow } from "@/presentation/theme/components/new-product/OfferSheet";
+import OfferSheet, {
+  OfferRow,
+} from "@/presentation/theme/components/new-product/OfferSheet";
 import PriceFields from "@/presentation/theme/components/new-product/PriceFields";
 import PricePreview from "@/presentation/theme/components/new-product/PricePreview";
 import SheetCard from "@/presentation/theme/components/new-product/SheetCard";
@@ -22,11 +24,11 @@ import { router } from "expo-router";
 import { X } from "lucide-react-native";
 import { useState } from "react";
 
-// Fase 3 / 25 (precio de la variante), 31 (código duplicado) y 32 (nombre requerido).
-// Edita la variante abierta con startEditingVariant; "Guardar" la deja en el modelo.
 const VariantScreen = () => {
   const dispatch = useAppDispatch();
-  const { editingVariant: variant, error } = useAppSelector((s) => s.newProduct);
+  const { editingVariant: variant, error } = useAppSelector(
+    (s) => s.newProduct,
+  );
   const [submitted, setSubmitted] = useState(false);
   const [barcodeInUse, setBarcodeInUse] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -34,7 +36,10 @@ const VariantScreen = () => {
 
   if (!variant) return null;
 
-  const nameError = submitted && !variant.name.trim() ? "Ingresa el nombre de la variante" : null;
+  const nameError =
+    submitted && !variant.name.trim()
+      ? "Ingresa el nombre de la variante"
+      : null;
   const priceMissing = submitted && !hasPrice(variant);
 
   const update = (changes: Parameters<typeof updateEditingVariant>[0]) => {
@@ -44,10 +49,17 @@ const VariantScreen = () => {
 
   const onSave = async () => {
     setSubmitted(true);
-    if (!variant.name.trim() || !hasPrice(variant) || !isOfferValid(variant.offer)) return;
+    if (
+      !variant.name.trim() ||
+      !hasPrice(variant) ||
+      !isOfferValid(variant.offer)
+    )
+      return;
 
     setIsChecking(true);
-    const result = await dispatch(checkBarcodeInUse({ barcode: variant.barcode, variantKey: variant.key }));
+    const result = await dispatch(
+      checkBarcodeInUse({ barcode: variant.barcode, variantKey: variant.key }),
+    );
     setIsChecking(false);
     if (!checkBarcodeInUse.fulfilled.match(result)) return;
     if (result.payload) {
@@ -63,7 +75,11 @@ const VariantScreen = () => {
       compactTop
       header={
         <AppBar
-          title={variant.name.trim() ? `Variante ${variant.name.trim()}` : "Nueva variante"}
+          title={
+            variant.name.trim()
+              ? `Variante ${variant.name.trim()}`
+              : "Nueva variante"
+          }
           onBack={() => router.back()}
           onAction={() => router.back()}
           actionIcon={X}
@@ -95,18 +111,26 @@ const VariantScreen = () => {
           showPreview={false}
           onChange={(changes) => update(changes)}
         />
-        {priceMissing && <InfoBanner tone="error" message="Agrega costo y precio de venta." />}
+        {priceMissing && (
+          <InfoBanner tone="error" message="Agrega costo y precio de venta." />
+        )}
 
         <BarcodeField
           target="variant"
           value={variant.barcode}
           onChange={(barcode) => update({ barcode })}
-          error={barcodeInUse ? "Este código de barras ya está en uso en otro producto" : null}
+          error={
+            barcodeInUse
+              ? "Este código de barras ya está en uso en otro producto"
+              : null
+          }
         />
 
         <OfferRow offer={variant.offer} onPress={() => setIsOfferOpen(true)} />
 
-        {hasPrice(variant) && <PricePreview price={Number(variant.price)} offer={variant.offer} />}
+        {hasPrice(variant) && (
+          <PricePreview price={Number(variant.price)} offer={variant.offer} />
+        )}
 
         {error && <InfoBanner tone="error" message={error} />}
         <ThemedText variant="caption" color={Colors.textSecondary}>

@@ -2,7 +2,12 @@ import { ApiError } from "@/config/api/api";
 import { getMyBusinessesRequest } from "@/features/business/businessApi";
 import type { Business } from "@/features/business/businessTypes";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getUserRequest, loginRequest, logoutRequest, passwordResetRequest } from "./authApi";
+import {
+  getUserRequest,
+  loginRequest,
+  logoutRequest,
+  passwordResetRequest,
+} from "./authApi";
 import {
   clearStoredSession,
   loadActiveBusiness,
@@ -21,7 +26,11 @@ interface AuthState {
   remember: boolean;
   blockReason: BlockReason | null;
   error: string | null;
-  passwordReset: { status: RequestStatus; email: string | null; error: string | null };
+  passwordReset: {
+    status: RequestStatus;
+    email: string | null;
+    error: string | null;
+  };
 }
 
 const initialState: AuthState = {
@@ -34,8 +43,7 @@ const initialState: AuthState = {
   passwordReset: { status: "idle", email: null, error: null },
 };
 
-// Lo que regresa el login (y la restauración de sesión) para que
-// businessSlice también pueda guardar la lista de negocios.
+//login y restauracion de la sesion
 export interface SignedInPayload {
   session: Session;
   user: AuthUser;
@@ -44,8 +52,7 @@ export interface SignedInPayload {
   rememberedBusinessSlug: string | null;
 }
 
-// Después de autenticar en Suajam revisamos si el usuario puede entrar
-// y traemos sus negocios (tenants).
+// Validacion y entrada a negocio del cliente
 async function loadAccount(session: Session) {
   const user = await getUserRequest(session.authorization);
   if (!user.panel_access) return { user, businesses: [] };
@@ -53,7 +60,10 @@ async function loadAccount(session: Session) {
   return { user, businesses };
 }
 
-function blockReasonFor(user: AuthUser, businesses: Business[]): BlockReason | null {
+function blockReasonFor(
+  user: AuthUser,
+  businesses: Business[],
+): BlockReason | null {
   if (!user.panel_access) return "no-panel-access";
   if (businesses.length === 0) return "no-business";
   return null;
@@ -74,13 +84,19 @@ export const login = createAsyncThunk<
     const { user, businesses } = await loadAccount(session);
     const canEnter = blockReasonFor(user, businesses) === null;
     if (remember && canEnter) await saveSession(session);
-    return { session, user, businesses, remember, rememberedBusinessSlug: null };
+    return {
+      session,
+      user,
+      businesses,
+      remember,
+      rememberedBusinessSlug: null,
+    };
   } catch (error) {
     return rejectWithValue(loginErrorMessage(error));
   }
 });
 
-// Al abrir la app: si el usuario marcó "Recordarme", recuperamos su sesión.
+// Al abrir la app: si el usuario marco "Recordarme", recuperamos su sesion.
 export const restoreSession = createAsyncThunk<SignedInPayload | null>(
   "auth/restoreSession",
   async () => {
@@ -93,10 +109,19 @@ export const restoreSession = createAsyncThunk<SignedInPayload | null>(
         return null;
       }
       const rememberedBusinessSlug = await loadActiveBusiness();
-      return { session, user, businesses, remember: true, rememberedBusinessSlug };
+      return {
+        session,
+        user,
+        businesses,
+        remember: true,
+        rememberedBusinessSlug,
+      };
     } catch (error) {
-      // Token vencido o inválido: se borra y se pide login de nuevo.
-      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+      // Token vencido o invalido: se borra y se pide login de nuevo.
+      if (
+        error instanceof ApiError &&
+        (error.status === 401 || error.status === 403)
+      ) {
         await clearStoredSession();
       }
       return null;
@@ -104,31 +129,34 @@ export const restoreSession = createAsyncThunk<SignedInPayload | null>(
   },
 );
 
-export const logout = createAsyncThunk<void, void, { state: { auth: AuthState } }>(
-  "auth/logout",
-  async (_, { getState }) => {
-    const authorization = getState().auth.session?.authorization;
-    await clearStoredSession();
-    if (authorization) {
-      // Si falla (sin conexión) igual cerramos la sesión local.
-      await logoutRequest(authorization).catch(() => undefined);
-    }
-  },
-);
+export const logout = createAsyncThunk<
+  void,
+  void,
+  { state: { auth: AuthState } }
+>("auth/logout", async (_, { getState }) => {
+  const authorization = getState().auth.session?.authorization;
+  await clearStoredSession();
+  if (authorization) {
+    // Si falla (sin conexion) igual cerramos la sesión local.
+    await logoutRequest(authorization).catch(() => undefined);
+  }
+});
 
-export const requestPasswordReset = createAsyncThunk<string, string, { rejectValue: string }>(
-  "auth/requestPasswordReset",
-  async (email, { rejectWithValue }) => {
-    const normalized = email.trim().toLowerCase();
-    try {
-      await passwordResetRequest(normalized);
-      return normalized;
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 0) return rejectWithValue(error.message);
-      return rejectWithValue("No pudimos enviar el enlace. Intenta nuevamente.");
-    }
-  },
-);
+export const requestPasswordReset = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("auth/requestPasswordReset", async (email, { rejectWithValue }) => {
+  const normalized = email.trim().toLowerCase();
+  try {
+    await passwordResetRequest(normalized);
+    return normalized;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 0)
+      return rejectWithValue(error.message);
+    return rejectWithValue("No pudimos enviar el enlace. Intenta nuevamente.");
+  }
+});
 
 const authSlice = createSlice({
   name: "auth",
@@ -157,7 +185,8 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.status = "idle";
-        state.error = action.payload ?? "No se pudo iniciar sesión. Intenta nuevamente.";
+        state.error =
+          action.payload ?? "No se pudo iniciar sesión. Intenta nuevamente.";
       })
 
       .addCase(restoreSession.fulfilled, (state, action) => {
@@ -184,13 +213,19 @@ const authSlice = createSlice({
         state.passwordReset = { status: "loading", email: null, error: null };
       })
       .addCase(requestPasswordReset.fulfilled, (state, action) => {
-        state.passwordReset = { status: "succeeded", email: action.payload, error: null };
+        state.passwordReset = {
+          status: "succeeded",
+          email: action.payload,
+          error: null,
+        };
       })
       .addCase(requestPasswordReset.rejected, (state, action) => {
         state.passwordReset = {
           status: "failed",
           email: null,
-          error: action.payload ?? "No pudimos enviar el enlace. Intenta nuevamente.",
+          error:
+            action.payload ??
+            "No pudimos enviar el enlace. Intenta nuevamente.",
         };
       });
   },

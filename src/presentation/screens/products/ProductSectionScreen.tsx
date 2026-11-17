@@ -13,14 +13,17 @@ import GeneralSectionScreen from "./sections/GeneralSectionScreen";
 import SimplePricingSectionScreen from "./sections/SimplePricingSectionScreen";
 import TaxesSectionScreen from "./sections/TaxesSectionScreen";
 
-// Fase 4 / 05–09: cada sección reutiliza las pantallas y guardados del alta.
 const Section = ({ section }: { section: string }) => {
   const typeId = useAppSelector((s) => s.newProduct.typeId);
   switch (section) {
     case "general":
       return <GeneralSectionScreen />;
     case "pricing":
-      return typeId === SIMPLE_TYPE ? <SimplePricingSectionScreen /> : <ModelsScreen />;
+      return typeId === SIMPLE_TYPE ? (
+        <SimplePricingSectionScreen />
+      ) : (
+        <ModelsScreen />
+      );
     case "taxes":
       return <TaxesSectionScreen />;
     case "channels":
@@ -31,7 +34,11 @@ const Section = ({ section }: { section: string }) => {
       return <DocumentsScreen />;
     default:
       return (
-        <ScreenLayout header={<AppBar title="Detalle del producto" onBack={() => router.back()} />}>
+        <ScreenLayout
+          header={
+            <AppBar title="Detalle del producto" onBack={() => router.back()} />
+          }
+        >
           <InfoBanner tone="error" message="Esta sección no existe." />
         </ScreenLayout>
       );
@@ -39,8 +46,15 @@ const Section = ({ section }: { section: string }) => {
 };
 
 const ProductSectionScreen = () => {
-  const { id, section } = useLocalSearchParams<{ id: string; section: string }>();
-  return <EditLoader productId={Number(id)}>{() => <Section section={section} />}</EditLoader>;
+  const { id, section } = useLocalSearchParams<{
+    id: string;
+    section: string;
+  }>();
+  return (
+    <EditLoader productId={Number(id)}>
+      {() => <Section section={section} />}
+    </EditLoader>
+  );
 };
 
 export default ProductSectionScreen;

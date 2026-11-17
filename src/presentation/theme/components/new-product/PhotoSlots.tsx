@@ -1,10 +1,15 @@
 import { Colors, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { MAX_PHOTOS, type DraftPhoto } from "@/features/products/newProductSlice";
+import {
+  MAX_PHOTOS,
+  type DraftPhoto,
+} from "@/features/products/newProductSlice";
 import { Image } from "expo-image";
 import { Camera } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import InfoBanner from "../InfoBanner";
 import ThemedText from "../ThemedText";
+import PhotoManagerModal from "./PhotoManagerModal";
 import PhotoSourceSheet from "./PhotoSourceSheet";
 
 interface Props {
@@ -13,20 +18,10 @@ interface Props {
   modelName: string;
 }
 
-// "Fotos del modelo": 5 espacios, la primera es la principal.
 const PhotoSlots = ({ photos, onChange, modelName }: Props) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const onRemove = (photo: DraftPhoto) => {
-    Alert.alert("¿Quitar foto?", "La foto dejará de estar en este modelo.", [
-      { text: "Volver", style: "cancel" },
-      {
-        text: "Quitar",
-        style: "destructive",
-        onPress: () => onChange(photos.filter((p) => p.key !== photo.key)),
-      },
-    ]);
-  };
+  const [isManagerOpen, setIsManagerOpen] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -45,13 +40,19 @@ const PhotoSlots = ({ photos, onChange, modelName }: Props) => {
           return photo ? (
             <Pressable
               key={photo.key}
-              onPress={() => onRemove(photo)}
+              onPress={() => setIsManagerOpen(true)}
               style={styles.slot}
               accessibilityRole="button"
-              accessibilityLabel={index === 0 ? "Foto principal" : `Foto ${index + 1}`}
-              accessibilityHint="Quita la foto"
+              accessibilityLabel={
+                index === 0 ? "Foto principal" : `Foto ${index + 1}`
+              }
+              accessibilityHint="Abre las fotos del modelo para ordenarlas o eliminarlas"
             >
-              <Image source={photo.uri} style={styles.photo} contentFit="cover" />
+              <Image
+                source={photo.uri}
+                style={styles.photo}
+                contentFit="cover"
+              />
             </Pressable>
           ) : (
             <Pressable
@@ -61,15 +62,35 @@ const PhotoSlots = ({ photos, onChange, modelName }: Props) => {
               accessibilityRole="button"
               accessibilityLabel="Agregar foto"
             >
-              <Camera size={24} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+              <Camera
+                size={24}
+                color={Colors.primary}
+                strokeWidth={iconStroke}
+                absoluteStrokeWidth
+              />
             </Pressable>
           );
         })}
       </View>
 
-      <ThemedText variant="caption" color={Colors.textSecondary}>
-        La primera foto será la principal. Máximo {MAX_PHOTOS}.
-      </ThemedText>
+      {photos.length >= MAX_PHOTOS ? (
+        <InfoBanner
+          tone="warning"
+          message="Límite de 5 fotos por modelo. Elimina una foto para agregar otra."
+        />
+      ) : (
+        <ThemedText variant="caption" color={Colors.textSecondary}>
+          La primera foto será la principal. Máximo {MAX_PHOTOS}.
+        </ThemedText>
+      )}
+
+      <PhotoManagerModal
+        visible={isManagerOpen}
+        modelName={modelName}
+        photos={photos}
+        onChange={onChange}
+        onClose={() => setIsManagerOpen(false)}
+      />
 
       <PhotoSourceSheet
         visible={isSheetOpen}

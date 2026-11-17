@@ -18,6 +18,12 @@ type RequestOptions = {
   baseUrl?: string;
 };
 
+//Sesion expirada
+let onUnauthorized: (() => void) | null = null;
+export function setUnauthorizedHandler(handler: () => void) {
+  onUnauthorized = handler;
+}
+
 export async function apiRequest<T>(
   path: string,
   {
@@ -29,7 +35,8 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const headers: Record<string, string> = { Accept: "application/json" };
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
-  if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
+  if (body !== undefined && !isForm)
+    headers["Content-Type"] = "application/json";
   if (authorization) headers.Authorization = authorization;
 
   let response: Response;
@@ -37,11 +44,19 @@ export async function apiRequest<T>(
     response = await fetch(`${baseUrl}${path}`, {
       method,
       headers,
-      body: isForm ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
+      body: isForm
+        ? (body as FormData)
+        : body !== undefined
+          ? JSON.stringify(body)
+          : undefined,
     });
   } catch (error) {
-    // Solo en desarrollo: el motivo real ayuda a distinguir red caída de un archivo ilegible.
-    if (__DEV__) console.warn(`[api] ${method} ${path} falló:`, error instanceof Error ? error.message : error);
+    //Sin conexion con el servidor
+    if (__DEV__)
+      console.warn(
+        `[api] ${method} ${path} falló:`,
+        error instanceof Error ? error.message : error,
+      );
     throw new ApiError(
       "Sin conexión. Revisa tu internet e intenta nuevamente.",
       0,
@@ -59,6 +74,8 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok) {
+    //Sesion vencida
+    if (response.status === 401 && authorization) onUnauthorized?.();
     throw new ApiError(extractErrorMessage(data), response.status, data);
   }
 

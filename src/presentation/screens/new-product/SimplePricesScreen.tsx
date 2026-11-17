@@ -1,5 +1,9 @@
 import { Colors, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { hasPrice, setFirstModelPhotos, updateDraft } from "@/features/products/newProductSlice";
+import {
+  hasPrice,
+  setFirstModelPhotos,
+  updateDraft,
+} from "@/features/products/newProductSlice";
 import NewProductLayout from "@/presentation/theme/components/new-product/NewProductLayout";
 import PhotoSlots from "@/presentation/theme/components/new-product/PhotoSlots";
 import PriceFields from "@/presentation/theme/components/new-product/PriceFields";
@@ -10,7 +14,6 @@ import { router } from "expo-router";
 import { Package } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 
-// Fase 3 / 14 y hoja "Agregar foto" (16 a 18).
 const SimplePricesScreen = () => {
   const dispatch = useAppDispatch();
   const { name, cost, price, models } = useAppSelector((s) => s.newProduct);
@@ -33,7 +36,12 @@ const SimplePricesScreen = () => {
           {name}
         </ThemedText>
         <View style={styles.badge}>
-          <Package size={14} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+          <Package
+            size={14}
+            color={Colors.primary}
+            strokeWidth={iconStroke}
+            absoluteStrokeWidth
+          />
           <ThemedText variant="caption" color={Colors.primary}>
             Simple
           </ThemedText>
@@ -46,7 +54,11 @@ const SimplePricesScreen = () => {
         onChange={(next) => dispatch(setFirstModelPhotos(next))}
       />
 
-      <PriceFields cost={cost} price={price} onChange={(changes) => dispatch(updateDraft(changes))} />
+      <PriceFields
+        cost={cost}
+        price={price}
+        onChange={(changes) => dispatch(updateDraft(changes))}
+      />
     </NewProductLayout>
   );
 };

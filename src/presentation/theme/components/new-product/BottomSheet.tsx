@@ -1,6 +1,14 @@
 import { Colors, radius, spacing } from "@/config/theme/theme";
 import type { ReactNode } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Props {
@@ -10,7 +18,6 @@ interface Props {
   children: ReactNode;
 }
 
-// Contenedor de las hojas inferiores: fondo oscuro que cierra al tocarlo y teclado cuidado.
 const BottomSheet = ({ visible, onClose, onShow, children }: Props) => {
   const { bottom } = useSafeAreaInsets();
 
@@ -26,8 +33,17 @@ const BottomSheet = ({ visible, onClose, onShow, children }: Props) => {
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <Pressable style={styles.overlay} onPress={onClose} accessibilityLabel="Cerrar" />
-        <View style={[styles.sheet, { paddingBottom: Math.max(bottom, spacing.lg) }]}>
+        <Pressable
+          style={styles.overlay}
+          onPress={onClose}
+          accessibilityLabel="Cerrar"
+        />
+        <View
+          style={[
+            styles.sheet,
+            { paddingBottom: Math.max(bottom, spacing.lg) },
+          ]}
+        >
           <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
             {children}
           </ScrollView>

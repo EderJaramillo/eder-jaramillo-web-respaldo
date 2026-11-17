@@ -1,4 +1,10 @@
-import { Colors, fonts, iconStroke, radius, spacing } from "@/config/theme/theme";
+import {
+  Colors,
+  fonts,
+  iconStroke,
+  radius,
+  spacing,
+} from "@/config/theme/theme";
 import { Bold, List, Smile, type LucideIcon } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
@@ -10,15 +16,18 @@ interface Props {
   error?: string | null;
 }
 
-// Fase 3 / 34: descripción con barra "Texto · Lista · Emojis".
-// La API guarda texto plano: negritas con **texto** y listas con "• ".
 const DescriptionField = ({ value, onChange, error }: Props) => {
-  const [selection, setSelection] = useState({ start: value.length, end: value.length });
+  const [selection, setSelection] = useState({
+    start: value.length,
+    end: value.length,
+  });
 
   const insert = (before: string, after = "") => {
     const { start, end } = selection;
     const selected = value.slice(start, end);
-    onChange(value.slice(0, start) + before + selected + after + value.slice(end));
+    onChange(
+      value.slice(0, start) + before + selected + after + value.slice(end),
+    );
   };
 
   const tools: { icon: LucideIcon; label: string; onPress?: () => void }[] = [
@@ -26,9 +35,14 @@ const DescriptionField = ({ value, onChange, error }: Props) => {
     {
       icon: List,
       label: "Lista",
-      onPress: () => insert(selection.start === 0 || value[selection.start - 1] === "\n" ? "• " : "\n• "),
+      onPress: () =>
+        insert(
+          selection.start === 0 || value[selection.start - 1] === "\n"
+            ? "• "
+            : "\n• ",
+        ),
     },
-    // Los emojis se eligen desde el teclado del teléfono: el ícono solo lo indica.
+
     { icon: Smile, label: "Emojis desde el teclado" },
   ];
 
@@ -46,7 +60,12 @@ const DescriptionField = ({ value, onChange, error }: Props) => {
               accessibilityRole={onPress ? "button" : "image"}
               accessibilityLabel={label}
             >
-              <Icon size={22} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+              <Icon
+                size={22}
+                color={Colors.primary}
+                strokeWidth={iconStroke}
+                absoluteStrokeWidth
+              />
             </Pressable>
           ))}
           <ThemedText variant="caption" color={Colors.textSecondary}>

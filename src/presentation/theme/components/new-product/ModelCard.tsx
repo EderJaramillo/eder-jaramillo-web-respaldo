@@ -1,5 +1,9 @@
 import { Colors, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { hasPrice, priceRange, type DraftModel } from "@/features/products/newProductSlice";
+import {
+  hasPrice,
+  priceRange,
+  type DraftModel,
+} from "@/features/products/newProductSlice";
 import { Image } from "expo-image";
 import { ChevronRight } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -15,21 +19,26 @@ function describe(model: DraftModel, withVariants: boolean) {
   const range = priceRange(model);
   if (withVariants) {
     const count = model.variants.length;
-    const prices = range ? (range.min === range.max ? ` · $${range.min}` : ` · $${range.min}–$${range.max}`) : "";
+    const prices = range
+      ? range.min === range.max
+        ? ` · $${range.min}`
+        : ` · $${range.min}–$${range.max}`
+      : "";
     return `${count} ${count === 1 ? "variante" : "variantes"}${prices}`;
   }
   return `1 precio · ${range ? `$${range.min}` : "Sin precio"}`;
 }
 
 function getStatus(model: DraftModel) {
-  if (!model.variants.some(hasPrice)) return { text: "Falta precio", color: Colors.danger };
-  if (model.photos.length === 0) return { text: "Falta foto", color: Colors.danger };
+  if (!model.variants.some(hasPrice))
+    return { text: "Falta precio", color: Colors.danger };
+  if (model.photos.length === 0)
+    return { text: "Falta foto", color: Colors.danger };
   return model.isActive
     ? { text: "Visible", color: Colors.primary }
     : { text: "Oculto", color: Colors.textSecondary };
 }
 
-// Fase 3 / 19 y 23: tarjeta de cada modelo con su estado.
 const ModelCard = ({ model, withVariants, onPress }: Props) => {
   const photo = model.photos[0];
   const status = getStatus(model);
@@ -61,7 +70,12 @@ const ModelCard = ({ model, withVariants, onPress }: Props) => {
           {status.text}
         </ThemedText>
       </View>
-      <ChevronRight size={20} color={Colors.textSecondary} strokeWidth={iconStroke} absoluteStrokeWidth />
+      <ChevronRight
+        size={20}
+        color={Colors.textSecondary}
+        strokeWidth={iconStroke}
+        absoluteStrokeWidth
+      />
     </Pressable>
   );
 };

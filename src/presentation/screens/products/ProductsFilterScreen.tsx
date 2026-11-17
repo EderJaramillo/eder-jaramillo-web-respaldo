@@ -1,5 +1,9 @@
 import { Colors, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { setCategoryFilter, setSearch, setTypeFilter } from "@/features/products/productsSlice";
+import {
+  setCategoryFilter,
+  setSearch,
+  setTypeFilter,
+} from "@/features/products/productsSlice";
 import { productTypes } from "@/features/products/productsTypes";
 import AppBar from "@/presentation/theme/components/AppBar";
 import BottomNav from "@/presentation/theme/components/BottomNav";
@@ -19,21 +23,26 @@ interface Option {
   label: string;
 }
 
-// Fase 2 / 07 (categoría) y 08 (tipo): cambian las opciones, no la estructura.
 const ProductsFilterScreen = () => {
   const dispatch = useAppDispatch();
   const { kind } = useLocalSearchParams<{ kind: "category" | "type" }>();
-  const { categories, categoryId, typeId, search } = useAppSelector((s) => s.products);
+  const { categories, categoryId, typeId, search } = useAppSelector(
+    (s) => s.products,
+  );
 
   const isCategory = kind === "category";
-  const [selectedId, setSelectedId] = useState(isCategory ? categoryId : typeId);
+  const [selectedId, setSelectedId] = useState(
+    isCategory ? categoryId : typeId,
+  );
   const [categoryQuery, setCategoryQuery] = useState("");
 
   const options: Option[] = isCategory
     ? [
         { id: null, label: "Todas las categorías" },
         ...categories
-          .filter((c) => c.name.toLowerCase().includes(categoryQuery.trim().toLowerCase()))
+          .filter((c) =>
+            c.name.toLowerCase().includes(categoryQuery.trim().toLowerCase()),
+          )
           .map((c) => ({ id: c.id, label: c.name })),
       ]
     : [{ id: null, label: "Todos los tipos" }, ...productTypes];
@@ -47,7 +56,10 @@ const ProductsFilterScreen = () => {
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <AppBar title="Filtrar productos" onBack={() => router.back()} />
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <ProductSearchBar
           value={search}
           onChangeText={(text) => dispatch(setSearch(text))}
@@ -95,8 +107,15 @@ const ProductsFilterScreen = () => {
             );
           })}
 
-          <ThemedButton title="Aplicar filtro" onPress={() => apply(selectedId)} />
-          <ThemedButton title="Limpiar filtro" variant="text" onPress={() => apply(null)} />
+          <ThemedButton
+            title="Aplicar filtro"
+            onPress={() => apply(selectedId)}
+          />
+          <ThemedButton
+            title="Limpiar filtro"
+            variant="text"
+            onPress={() => apply(null)}
+          />
         </View>
       </ScrollView>
 
@@ -114,7 +133,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
-    // Figma: 16 de margen + 15 de la línea vacía + 12 de separación.
+
     paddingTop: 43,
     gap: spacing.md,
   },

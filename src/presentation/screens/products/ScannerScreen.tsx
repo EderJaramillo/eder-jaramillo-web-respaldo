@@ -1,9 +1,22 @@
-import { Colors, iconStroke, radius, spacing, touchTarget } from "@/config/theme/theme";
+import {
+  Colors,
+  iconStroke,
+  radius,
+  spacing,
+  touchTarget,
+} from "@/config/theme/theme";
+import {
+  applyScannedBarcode,
+  type BarcodeTarget,
+} from "@/features/products/newProductSlice";
 import ThemedButton from "@/presentation/theme/components/ThemedButton";
 import ThemedText from "@/presentation/theme/components/ThemedText";
-import { applyScannedBarcode, type BarcodeTarget } from "@/features/products/newProductSlice";
 import { useAppDispatch } from "@/store/hooks";
-import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
+import {
+  CameraView,
+  useCameraPermissions,
+  type BarcodeScanningResult,
+} from "expo-camera";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ArrowLeft, Keyboard, Zap, ZapOff } from "lucide-react-native";
@@ -13,7 +26,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const ScannerScreen = () => {
   const dispatch = useAppDispatch();
-  // Al crear un producto solo se captura el código, no se busca.
+  // Al crear un producto solo se captura el código
   const { mode, target = "simple" } = useLocalSearchParams<{
     mode?: "capture";
     target?: BarcodeTarget;
@@ -47,9 +60,18 @@ const ScannerScreen = () => {
           accessibilityRole="button"
           accessibilityLabel="Volver"
         >
-          <ArrowLeft size={24} color={Colors.onPrimary} strokeWidth={iconStroke} absoluteStrokeWidth />
+          <ArrowLeft
+            size={24}
+            color={Colors.onPrimary}
+            strokeWidth={iconStroke}
+            absoluteStrokeWidth
+          />
         </Pressable>
-        <ThemedText variant="subtitle" color={Colors.onPrimary} style={styles.title}>
+        <ThemedText
+          variant="subtitle"
+          color={Colors.onPrimary}
+          style={styles.title}
+        >
           Escanear código
         </ThemedText>
         <Pressable
@@ -59,7 +81,12 @@ const ScannerScreen = () => {
           accessibilityLabel="Flash"
           accessibilityState={{ checked: isTorchOn }}
         >
-          <TorchIcon size={24} color={Colors.onPrimary} strokeWidth={iconStroke} absoluteStrokeWidth />
+          <TorchIcon
+            size={24}
+            color={Colors.onPrimary}
+            strokeWidth={iconStroke}
+            absoluteStrokeWidth
+          />
         </Pressable>
       </View>
 
@@ -76,7 +103,14 @@ const ScannerScreen = () => {
                 facing="back"
                 enableTorch={isTorchOn}
                 barcodeScannerSettings={{
-                  barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e", "code128", "code39"],
+                  barcodeTypes: [
+                    "ean13",
+                    "ean8",
+                    "upc_a",
+                    "upc_e",
+                    "code128",
+                    "code39",
+                  ],
                 }}
                 onBarcodeScanned={onBarcodeScanned}
               />
@@ -144,7 +178,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: spacing.lg,
-    // Figma: 16 de margen + 15 de la línea vacía + 12 de separación.
     paddingTop: 43,
     gap: spacing.md,
   },

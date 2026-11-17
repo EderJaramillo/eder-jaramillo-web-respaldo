@@ -1,16 +1,28 @@
-import { Colors, fonts, iconStroke, radius, spacing, touchTarget } from "@/config/theme/theme";
+import {
+  Colors,
+  fonts,
+  iconStroke,
+  radius,
+  spacing,
+  touchTarget,
+} from "@/config/theme/theme";
 import { Check } from "lucide-react-native";
 import { Pressable, StyleSheet, Text } from "react-native";
 
 interface Props {
   label: string;
   selected?: boolean;
-  // Fase 3 / 37: las etiquetas elegidas llevan palomita.
+
   showCheck?: boolean;
   onPress: () => void;
 }
 
-const FilterChip = ({ label, selected = false, showCheck = false, onPress }: Props) => {
+const FilterChip = ({
+  label,
+  selected = false,
+  showCheck = false,
+  onPress,
+}: Props) => {
   return (
     <Pressable
       onPress={onPress}
@@ -18,9 +30,16 @@ const FilterChip = ({ label, selected = false, showCheck = false, onPress }: Pro
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      <Text style={[styles.label, selected && styles.selectedLabel]}>{label}</Text>
+      <Text style={[styles.label, selected && styles.selectedLabel]}>
+        {label}
+      </Text>
       {showCheck && selected && (
-        <Check size={14} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+        <Check
+          size={14}
+          color={Colors.primary}
+          strokeWidth={iconStroke}
+          absoluteStrokeWidth
+        />
       )}
     </Pressable>
   );

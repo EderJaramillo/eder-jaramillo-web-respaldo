@@ -1,7 +1,13 @@
 import { Colors, iconStroke, spacing } from "@/config/theme/theme";
 import { useAppSelector } from "@/store/hooks";
 import { router, type Href } from "expo-router";
-import { ChevronRight, FileText, Percent, Tags, type LucideIcon } from "lucide-react-native";
+import {
+  ChevronRight,
+  FileText,
+  Percent,
+  Tags,
+  type LucideIcon,
+} from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 import ThemedText from "../ThemedText";
 import BottomSheet from "./BottomSheet";
@@ -12,15 +18,22 @@ interface Props {
   onClose: () => void;
 }
 
-const rate = (value: string) => (Number(value) === 0 ? "No aplica" : `${value}%`);
+const rate = (value: string) =>
+  Number(value) === 0 ? "No aplica" : `${value}%`;
 const count = (n: number, one: string, many: string, none: string) =>
   n === 0 ? none : `${n} ${n === 1 ? one : many}`;
 
-// "Impuestos, canales y más": acceso a las pantallas 36, 37 y 39.
 const ExtrasSheet = ({ visible, onClose }: Props) => {
-  const { ivaRate, iepsRate, appliedLabels, documents } = useAppSelector((s) => s.newProduct);
+  const { ivaRate, iepsRate, appliedLabels, documents } = useAppSelector(
+    (s) => s.newProduct,
+  );
 
-  const options: { icon: LucideIcon; title: string; subtitle: string; href: Href }[] = [
+  const options: {
+    icon: LucideIcon;
+    title: string;
+    subtitle: string;
+    href: Href;
+  }[] = [
     {
       icon: Percent,
       title: "Impuestos y canales",
@@ -54,7 +67,12 @@ const ExtrasSheet = ({ visible, onClose }: Props) => {
               router.push(href);
             }}
           >
-            <Icon size={24} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+            <Icon
+              size={24}
+              color={Colors.primary}
+              strokeWidth={iconStroke}
+              absoluteStrokeWidth
+            />
             <View style={styles.text}>
               <ThemedText variant="bodyMedium">{title}</ThemedText>
               <ThemedText variant="caption" color={Colors.textSecondary}>

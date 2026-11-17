@@ -1,9 +1,3 @@
-// El Swagger marca `main_model` e `images` como texto sin describir su forma.
-// Puede llegar una URL, una ruta relativa (/media/...), JSON, una lista o un objeto:
-// aquí se aceptan todas y se devuelven URLs completas.
-
-// La API manda { url: "tenants/…" (ruta interna), public_url: "https://…s3…" }:
-// public_url es la que se puede mostrar, por eso va primero.
 const IMAGE_KEYS = [
   "public_url",
   "image_url",
@@ -25,9 +19,7 @@ export function extractImageUrls(value: unknown): string[] {
     if (text.startsWith("[") || text.startsWith("{")) {
       try {
         return extractImageUrls(JSON.parse(text));
-      } catch {
-        // No es JSON válido (por ejemplo, un dict de Python): se buscan URLs en el texto.
-      }
+      } catch {}
     }
     const found = text.match(URL_PATTERN);
     if (found) return found;
@@ -46,7 +38,6 @@ export function extractImageUrls(value: unknown): string[] {
   return [];
 }
 
-// Las rutas relativas se sirven desde el dominio del negocio.
 export function resolveImageUrl(url: string, businessApiUrl: string): string {
   if (/^https?:\/\//i.test(url)) return url;
   if (url.startsWith("//")) return `https:${url}`;
@@ -54,7 +45,10 @@ export function resolveImageUrl(url: string, businessApiUrl: string): string {
   return `${origin}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
-export function firstImageUrl(value: unknown, businessApiUrl: string): string | null {
+export function firstImageUrl(
+  value: unknown,
+  businessApiUrl: string,
+): string | null {
   const [url] = extractImageUrls(value);
   return url ? resolveImageUrl(url, businessApiUrl) : null;
 }

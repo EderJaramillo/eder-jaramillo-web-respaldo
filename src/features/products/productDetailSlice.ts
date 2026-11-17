@@ -1,11 +1,13 @@
+import { apiRequest } from "@/config/api/api";
 import { getBusinessContext } from "@/features/business/businessContext";
-import { extractImageUrls, resolveImageUrl } from "@/features/products/productImages";
+import {
+  extractImageUrls,
+  resolveImageUrl,
+} from "@/features/products/productImages";
 import type { RootState } from "@/store/store";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { apiRequest } from "@/config/api/api";
 import { updateModelRequest, updateProductRequest } from "./productsApi";
 
-// Fase 4: detalle de un producto ya creado, con sus modelos y presentaciones.
 export interface DetailPresentation {
   id: number;
   name: string;
@@ -66,10 +68,15 @@ const initialState: ProductDetailState = {
 type ThunkConfig = { state: RootState; rejectValue: string };
 
 const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "No pudimos completar la acción. Intenta de nuevo.";
+  error instanceof Error
+    ? error.message
+    : "No pudimos completar la acción. Intenta de nuevo.";
 
-// Fotos de todos los modelos, en orden: la primera es la principal.
-function collectPhotos(detail: FullProductDetail, baseUrl: string): DetailPhoto[] {
+// Fotos de todos los modelos
+function collectPhotos(
+  detail: FullProductDetail,
+  baseUrl: string,
+): DetailPhoto[] {
   const seen = new Set<string>();
   const photos: DetailPhoto[] = [];
   for (const model of detail.product_models ?? []) {
@@ -94,15 +101,21 @@ export const fetchProductDetail = createAsyncThunk<
 >("productDetail/fetch", async (id, { getState, rejectWithValue }) => {
   try {
     const context = getBusinessContext(getState());
-    const detail = await apiRequest<FullProductDetail>(`/catalog/products/${id}/`, context);
+    const detail = await apiRequest<FullProductDetail>(
+      `/catalog/products/${id}/`,
+      context,
+    );
     return { detail, photos: collectPhotos(detail, context.baseUrl) };
   } catch (error) {
     return rejectWithValue(errorMessage(error));
   }
 });
 
-// Interruptor "Visible" del detalle.
-export const setDetailVisibility = createAsyncThunk<boolean, boolean, ThunkConfig>(
+export const setDetailVisibility = createAsyncThunk<
+  boolean,
+  boolean,
+  ThunkConfig
+>(
   "productDetail/visibility",
   async (isActive, { getState, rejectWithValue }) => {
     const { detail } = getState().productDetail;
@@ -113,10 +126,14 @@ export const setDetailVisibility = createAsyncThunk<boolean, boolean, ThunkConfi
       const models = detail.product_models ?? [];
       if (isActive && !models.some((m) => m.is_active)) {
         const priced = models.filter((m) =>
-          (m.presentations ?? []).some((p) => p.is_active && Number(p.price) > 0),
+          (m.presentations ?? []).some(
+            (p) => p.is_active && Number(p.price) > 0,
+          ),
         );
         if (priced.length === 0) {
-          throw new Error("Para hacerlo visible, agrega un precio a al menos un modelo.");
+          throw new Error(
+            "Para hacerlo visible, agrega un precio a al menos un modelo.",
+          );
         }
         for (const model of priced) {
           await updateModelRequest(context, model.id, { is_active: true });
@@ -166,11 +183,15 @@ const productDetailSlice = createSlice({
         state.isSaving = false;
         if (state.detail) {
           state.detail.is_active = action.payload;
-          // Igual que en el servidor: solo se activaron modelos si no había ninguno visible.
+
           const models = state.detail.product_models ?? [];
           if (action.payload && !models.some((m) => m.is_active)) {
             for (const model of models) {
-              if ((model.presentations ?? []).some((p) => p.is_active && Number(p.price) > 0)) {
+              if (
+                (model.presentations ?? []).some(
+                  (p) => p.is_active && Number(p.price) > 0,
+                )
+              ) {
                 model.is_active = true;
               }
             }

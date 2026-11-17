@@ -14,7 +14,7 @@ import ThemedText from "../ThemedText";
 interface Props {
   product: Product;
   onToggleActions: () => void;
-  // Tocar la tarjeta abre el detalle; deslizarla muestra las acciones.
+
   onOpen?: () => void;
 }
 
@@ -24,17 +24,20 @@ function getStatus(product: Product) {
   }
   const label = product.is_active ? "Visible" : "Oculto";
   const price = getProductPrice(product);
-  return { text: price === null ? label : `${label} · $${price}`, color: Colors.primary };
+  return {
+    text: price === null ? label : `${label} · $${price}`,
+    color: Colors.primary,
+  };
 }
 
 const ProductCard = ({ product, onToggleActions, onOpen }: Props) => {
   const image = getProductImage(product);
   const status = getStatus(product);
 
-  // Deslizar la tarjeta hacia los lados muestra u oculta sus acciones.
   const [panResponder] = useState(() =>
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, { dx, dy }) => Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy),
+      onMoveShouldSetPanResponder: (_, { dx, dy }) =>
+        Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy),
       onPanResponderRelease: onToggleActions,
     }),
   );
@@ -46,7 +49,11 @@ const ProductCard = ({ product, onToggleActions, onOpen }: Props) => {
         style={styles.card}
         accessibilityRole="button"
         accessibilityLabel={`${product.name}, ${status.text}`}
-        accessibilityHint={onOpen ? "Abre el detalle del producto" : "Muestra las acciones del producto"}
+        accessibilityHint={
+          onOpen
+            ? "Abre el detalle del producto"
+            : "Muestra las acciones del producto"
+        }
       >
         {image ? (
           <Image source={image} style={styles.photo} contentFit="cover" />
@@ -61,8 +68,13 @@ const ProductCard = ({ product, onToggleActions, onOpen }: Props) => {
           <ThemedText variant="bodyStrong" numberOfLines={1}>
             {product.name}
           </ThemedText>
-          <ThemedText variant="caption" color={Colors.textSecondary} numberOfLines={1}>
-            {product.category?.name ?? "Sin categoría"} · {product.sku || "Sin SKU"}
+          <ThemedText
+            variant="caption"
+            color={Colors.textSecondary}
+            numberOfLines={1}
+          >
+            {product.category?.name ?? "Sin categoría"} ·{" "}
+            {product.sku || "Sin SKU"}
           </ThemedText>
           <ThemedText variant="caption" color={status.color} numberOfLines={1}>
             {status.text}

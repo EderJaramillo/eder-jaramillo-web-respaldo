@@ -9,11 +9,10 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   error?: string | null;
-  // A dónde deja el escáner el código leído.
+
   target: BarcodeTarget;
 }
 
-// "Código de barras (opcional)": se escribe o se escanea.
 const BarcodeField = ({ value, onChange, error, target }: Props) => (
   <ThemedTextInput
     label="Código de barras (opcional)"
@@ -25,12 +24,22 @@ const BarcodeField = ({ value, onChange, error, target }: Props) => (
     autoCapitalize="none"
     accessory={
       <Pressable
-        onPress={() => router.push({ pathname: "/scanner", params: { mode: "capture", target } })}
+        onPress={() =>
+          router.push({
+            pathname: "/scanner",
+            params: { mode: "capture", target },
+          })
+        }
         hitSlop={12}
         accessibilityRole="button"
         accessibilityLabel="Escanear código"
       >
-        <ScanBarcode size={24} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+        <ScanBarcode
+          size={24}
+          color={Colors.primary}
+          strokeWidth={iconStroke}
+          absoluteStrokeWidth
+        />
       </Pressable>
     }
   />

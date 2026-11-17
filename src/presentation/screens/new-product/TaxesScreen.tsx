@@ -22,9 +22,9 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
-const rateLabel = (rate: string) => (Number(rate) === 0 ? "No aplica" : `${rate}%`);
+const rateLabel = (rate: string) =>
+  Number(rate) === 0 ? "No aplica" : `${rate}%`;
 
-// "Refresco: $25 + $2 IEPS = $27; IVA $4.32. Total $31.32. Oferta de 10% solo en tienda."
 function breakdown(name: string, price: number, taxes: Taxes, offer: Offer) {
   const { ieps, iva, total } = withTaxes(price, taxes);
   let text = `${name}: ${money(price)}`;
@@ -43,7 +43,6 @@ function breakdown(name: string, price: number, taxes: Taxes, offer: Offer) {
   return text;
 }
 
-// Fase 3 / 36: impuestos y dónde se muestra el producto.
 const TaxesScreen = () => {
   const dispatch = useAppDispatch();
   const draft = useAppSelector((s) => s.newProduct);
@@ -109,11 +108,18 @@ const TaxesScreen = () => {
           checked={showOnStore}
           onChange={setShowOnStore}
         />
-        <ThemedCheckbox label="Punto de venta" checked={showOnPos} onChange={setShowOnPos} />
+        <ThemedCheckbox
+          label="Punto de venta"
+          checked={showOnPos}
+          onChange={setShowOnPos}
+        />
       </View>
 
       <PricePreview price={price} offer={offer} taxes={taxes} />
-      <ThemedText variant="caption" color={noChannel ? Colors.danger : Colors.textSecondary}>
+      <ThemedText
+        variant="caption"
+        color={noChannel ? Colors.danger : Colors.textSecondary}
+      >
         {noChannel
           ? "Elige al menos un canal para mostrar el producto."
           : breakdown(draft.name.trim(), price, taxes, offer)}

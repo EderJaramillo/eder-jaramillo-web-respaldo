@@ -5,12 +5,12 @@ import {
   saveDocuments,
   type DocumentItem,
 } from "@/features/products/newProductSlice";
+import { useAfterSave } from "@/presentation/screens/products/sections/useSectionSaved";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import NewProductLayout from "@/presentation/theme/components/new-product/NewProductLayout";
 import ThemedButton from "@/presentation/theme/components/ThemedButton";
 import ThemedText from "@/presentation/theme/components/ThemedText";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useAfterSave } from "@/presentation/screens/products/sections/useSectionSaved";
 import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
 import { FileText, Trash2, Upload } from "lucide-react-native";
@@ -22,7 +22,6 @@ const formatSize = (bytes: number) =>
     ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
     : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
-// Fase 3 / 39: los PDF se eligen aquí y se suben al tocar "Guardar documentos".
 const DocumentsScreen = () => {
   const dispatch = useAppDispatch();
   const { documents, isSaving, mode } = useAppSelector((s) => s.newProduct);
@@ -45,12 +44,12 @@ const DocumentsScreen = () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "application/pdf",
       multiple: true,
-      // Sin copia: en Expo Go la copia en caché no se puede leer para subirla.
-      // La URI original del selector sí trae permiso de lectura.
       copyToCacheDirectory: false,
     });
     if (result.canceled) return;
-    const fits = result.assets.filter((asset) => (asset.size ?? 0) <= MAX_DOCUMENT_BYTES);
+    const fits = result.assets.filter(
+      (asset) => (asset.size ?? 0) <= MAX_DOCUMENT_BYTES,
+    );
     setTooBig(fits.length < result.assets.length);
     setItems((current) => [
       ...current,
@@ -87,10 +86,13 @@ const DocumentsScreen = () => {
         ) : undefined
       }
     >
-      <ThemedText variant="title">{isEdit ? "Archivos del producto" : "Documentos del producto"}</ThemedText>
+      <ThemedText variant="title">
+        {isEdit ? "Archivos del producto" : "Documentos del producto"}
+      </ThemedText>
       {!isEdit && (
         <ThemedText color={Colors.textSecondary}>
-          Agrega fichas técnicas o instrucciones en PDF. Máximo 50 MB por archivo.
+          Agrega fichas técnicas o instrucciones en PDF. Máximo 50 MB por
+          archivo.
         </ThemedText>
       )}
 
@@ -113,7 +115,11 @@ const DocumentsScreen = () => {
                 </ThemedText>
               </View>
               <Pressable
-                onPress={() => setItems((current) => current.filter((i) => i.key !== item.key))}
+                onPress={() =>
+                  setItems((current) =>
+                    current.filter((i) => i.key !== item.key),
+                  )
+                }
                 hitSlop={12}
                 accessibilityRole="button"
                 accessibilityLabel={`Quitar ${item.name}`}
@@ -130,7 +136,12 @@ const DocumentsScreen = () => {
         </View>
       )}
 
-      <ThemedButton title="Agregar PDF" variant="outline" icon={Upload} onPress={addPdf} />
+      <ThemedButton
+        title="Agregar PDF"
+        variant="outline"
+        icon={Upload}
+        onPress={addPdf}
+      />
       {isEdit && (
         <ThemedText variant="caption" color={Colors.textSecondary}>
           Máximo 50 MB por archivo. Guardar aparece solo cuando haces cambios.

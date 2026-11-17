@@ -1,5 +1,14 @@
 import { Colors, spacing } from "@/config/theme/theme";
-import { logout } from "@/features/auth/authSlice";
+import {
+  deleteDraftFile,
+  loadDraftFile,
+} from "@/features/products/draftStorage";
+import {
+  resetDraft,
+  restoreDraft,
+  resumeRoute,
+  type SavedDraft,
+} from "@/features/products/newProductSlice";
 import {
   archiveProduct,
   fetchCategories,
@@ -8,24 +17,23 @@ import {
   setSearch,
   setVisibilityFilter,
 } from "@/features/products/productsSlice";
-import { PRODUCT_LIMIT, type Product, type VisibilityFilter } from "@/features/products/productsTypes";
-import { deleteDraftFile, loadDraftFile } from "@/features/products/draftStorage";
 import {
-  resetDraft,
-  restoreDraft,
-  resumeRoute,
-  type SavedDraft,
-} from "@/features/products/newProductSlice";
+  PRODUCT_LIMIT,
+  type Product,
+  type VisibilityFilter,
+} from "@/features/products/productsTypes";
 import AppBar from "@/presentation/theme/components/AppBar";
 import BottomNav from "@/presentation/theme/components/BottomNav";
 import ConfirmDialog from "@/presentation/theme/components/ConfirmDialog";
 import EmptyState from "@/presentation/theme/components/EmptyState";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
+import { Toasts } from "@/presentation/theme/components/NoticesHost";
 import FilterChip from "@/presentation/theme/components/products/FilterChip";
 import ProductCard from "@/presentation/theme/components/products/ProductCard";
 import ProductSearchBar from "@/presentation/theme/components/products/ProductSearchBar";
 import QuotaBar from "@/presentation/theme/components/products/QuotaBar";
 import SkeletonCard from "@/presentation/theme/components/products/SkeletonCard";
+import { goToTab } from "@/presentation/theme/components/TabScreen";
 import ThemedButton from "@/presentation/theme/components/ThemedButton";
 import ThemedText from "@/presentation/theme/components/ThemedText";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -38,15 +46,15 @@ import { router, type Href } from "expo-router";
 import {
   Archive,
   CircleUserRound,
-  FilePen,
   Eye,
   EyeOff,
+  FilePen,
   PackageOpen,
   Plus,
   SearchX,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Alert, FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const visibilityChips: { value: VisibilityFilter; label: string }[] = [
@@ -55,19 +63,26 @@ const visibilityChips: { value: VisibilityFilter; label: string }[] = [
   { value: "hidden", label: "Ocultos" },
 ];
 
-const showComingSoon = (feature: string) => Alert.alert("Próximamente", `${feature} estará disponible pronto.`);
-
 const ProductsScreen = () => {
   const dispatch = useAppDispatch();
   const business = useAppSelector(selectActiveBusiness);
   const products = useAppSelector(selectFilteredProducts);
   const hasActiveFilters = useAppSelector(selectHasActiveFilters);
-  const { items, count, hasMore, status, isOffline, error, search, visibility } = useAppSelector(
-    (s) => s.products,
-  );
+  const {
+    items,
+    count,
+    hasMore,
+    status,
+    isOffline,
+    error,
+    search,
+    visibility,
+  } = useAppSelector((s) => s.products);
 
   const [openProductId, setOpenProductId] = useState<number | null>(null);
-  const [productToArchive, setProductToArchive] = useState<Product | null>(null);
+  const [productToArchive, setProductToArchive] = useState<Product | null>(
+    null,
+  );
   const activeSlug = useAppSelector((s) => s.business.activeSlug);
   const draftInProgress = useAppSelector(
     (s) => s.newProduct.productId !== null && s.newProduct.mode === "create",
@@ -78,9 +93,11 @@ const ProductsScreen = () => {
     if (isEditing) dispatch(resetDraft());
     router.push("/new-product");
   };
-  // Borrador que quedó a medias la última vez (la app se cerró o se recargó).
+
   const [savedDraft, setSavedDraft] = useState<SavedDraft | null>(() =>
-    activeSlug && !draftInProgress ? loadDraftFile<SavedDraft>(activeSlug) : null,
+    activeSlug && !draftInProgress
+      ? loadDraftFile<SavedDraft>(activeSlug)
+      : null,
   );
 
   const resumeDraft = () => {
@@ -103,16 +120,10 @@ const ProductsScreen = () => {
   const isLimitReached = count >= PRODUCT_LIMIT;
   const isFirstLoad = status === "loading" && items.length === 0;
 
-  const onAccount = () => {
-    Alert.alert("¿Cerrar sesión?", "Tendrás que volver a entrar con tu correo y contraseña.", [
-      { text: "Volver", style: "cancel" },
-      { text: "Cerrar sesión", style: "destructive", onPress: () => dispatch(logout()) },
-    ]);
-  };
+  const onAccount = () => goToTab("account");
 
   const onTabSelect = (tab: "products" | "gallery" | "account") => {
-    if (tab === "gallery") showComingSoon("La galería");
-    if (tab === "account") onAccount();
+    if (tab !== "products") goToTab(tab);
   };
 
   const onConfirmArchive = () => {
@@ -127,7 +138,9 @@ const ProductsScreen = () => {
       <View style={styles.item}>
         <ProductCard
           product={item}
-          onToggleActions={() => setOpenProductId((id) => (id === item.id ? null : item.id))}
+          onToggleActions={() =>
+            setOpenProductId((id) => (id === item.id ? null : item.id))
+          }
           onOpen={() => router.push(`/product/${item.id}` as Href)}
         />
         {isOpen &&
@@ -139,7 +152,11 @@ const ProductsScreen = () => {
                   variant="outline"
                   icon={EyeOff}
                   disabled={isOffline}
-                  onPress={() => dispatch(setProductVisibility({ id: item.id, isActive: false }))}
+                  onPress={() =>
+                    dispatch(
+                      setProductVisibility({ id: item.id, isActive: false }),
+                    )
+                  }
                 />
               </View>
               <View style={styles.action}>
@@ -158,7 +175,9 @@ const ProductsScreen = () => {
               variant="outline"
               icon={Eye}
               disabled={isOffline}
-              onPress={() => dispatch(setProductVisibility({ id: item.id, isActive: true }))}
+              onPress={() =>
+                dispatch(setProductVisibility({ id: item.id, isActive: true }))
+              }
             />
           ))}
       </View>
@@ -175,7 +194,11 @@ const ProductsScreen = () => {
       />
 
       {isFirstLoad ? (
-        <ThemedText variant="caption" color={Colors.textSecondary} style={styles.loadingText}>
+        <ThemedText
+          variant="caption"
+          color={Colors.textSecondary}
+          style={styles.loadingText}
+        >
           Cargando tus productos…
         </ThemedText>
       ) : openProductId !== null ? (
@@ -203,11 +226,18 @@ const ProductsScreen = () => {
               />
               <FilterChip
                 label="Categoría ↓"
-                onPress={() => router.push({ pathname: "/filter", params: { kind: "category" } })}
+                onPress={() =>
+                  router.push({
+                    pathname: "/filter",
+                    params: { kind: "category" },
+                  })
+                }
               />
               <FilterChip
                 label="Tipo ↓"
-                onPress={() => router.push({ pathname: "/filter", params: { kind: "type" } })}
+                onPress={() =>
+                  router.push({ pathname: "/filter", params: { kind: "type" } })
+                }
               />
             </View>
           </View>
@@ -257,6 +287,9 @@ const ProductsScreen = () => {
         actionIcon={CircleUserRound}
         actionLabel="Cuenta"
       />
+      <View style={styles.toastArea}>
+        <Toasts />
+      </View>
 
       <FlatList
         style={styles.list}
@@ -282,7 +315,8 @@ const ProductsScreen = () => {
         keyboardShouldPersistTaps="handled"
         onEndReachedThreshold={0.3}
         onEndReached={() => {
-          if (hasMore && status === "succeeded") dispatch(fetchProducts("more"));
+          if (hasMore && status === "succeeded")
+            dispatch(fetchProducts("more"));
         }}
         refreshControl={
           <RefreshControl
@@ -337,13 +371,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+
+  toastArea: {
+    height: 0,
+    zIndex: 10,
+    elevation: 10,
+  },
   list: {
     flex: 1,
   },
   content: {
     flexGrow: 1,
     padding: spacing.lg,
-    // Figma: 16 de margen + 15 de la línea vacía + 12 de separación.
+
     paddingTop: 43,
   },
   header: {

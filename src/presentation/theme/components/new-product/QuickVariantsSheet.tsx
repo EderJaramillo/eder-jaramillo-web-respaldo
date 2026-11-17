@@ -1,5 +1,15 @@
-import { Colors, fonts, iconStroke, radius, spacing, touchTarget } from "@/config/theme/theme";
-import { addEditingVariants, hasPrice } from "@/features/products/newProductSlice";
+import {
+  Colors,
+  fonts,
+  iconStroke,
+  radius,
+  spacing,
+  touchTarget,
+} from "@/config/theme/theme";
+import {
+  addEditingVariants,
+  hasPrice,
+} from "@/features/products/newProductSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Check } from "lucide-react-native";
 import { useState } from "react";
@@ -12,7 +22,6 @@ import BottomSheet from "./BottomSheet";
 import PriceFields from "./PriceFields";
 import SheetCard from "./SheetCard";
 
-// Opciones rápidas del Figma: tallas, tamaños y capacidades.
 const PRESET_GROUPS = [
   ["CH", "M", "G", "XG"],
   ["Chico", "Mediano", "Grande"],
@@ -24,10 +33,11 @@ interface Props {
   onClose: () => void;
 }
 
-// Fase 3 / 26: crear varias variantes de una vez con costo y precio común.
 const QuickVariantsSheet = ({ visible, onClose }: Props) => {
   const dispatch = useAppDispatch();
-  const existing = useAppSelector((s) => s.newProduct.editingModel?.variants ?? []);
+  const existing = useAppSelector(
+    (s) => s.newProduct.editingModel?.variants ?? [],
+  );
 
   const [selected, setSelected] = useState<string[]>([]);
   const [custom, setCustom] = useState<string[]>([]);
@@ -36,7 +46,9 @@ const QuickVariantsSheet = ({ visible, onClose }: Props) => {
   const [price, setPrice] = useState("");
 
   const existingNames = new Set(existing.map((v) => v.name.toLowerCase()));
-  const toCreate = selected.filter((name) => !existingNames.has(name.toLowerCase()));
+  const toCreate = selected.filter(
+    (name) => !existingNames.has(name.toLowerCase()),
+  );
   const canApply = toCreate.length > 0 && hasPrice({ cost, price });
 
   const onShow = () => {
@@ -49,7 +61,9 @@ const QuickVariantsSheet = ({ visible, onClose }: Props) => {
 
   const toggle = (name: string) =>
     setSelected((current) =>
-      current.includes(name) ? current.filter((n) => n !== name) : [...current, name],
+      current.includes(name)
+        ? current.filter((n) => n !== name)
+        : [...current, name],
     );
 
   const addOther = () => {
@@ -67,34 +81,58 @@ const QuickVariantsSheet = ({ visible, onClose }: Props) => {
           Selecciona varias opciones. Podrás ajustar cada precio después.
         </ThemedText>
 
-        {[...PRESET_GROUPS, custom].filter((group) => group.length > 0).map((group) => (
-          <View key={group.join()} style={styles.chips}>
-            {group.map((name) => {
-              const isSelected = selected.includes(name);
-              const isExisting = existingNames.has(name.toLowerCase());
-              return (
-                <Pressable
-                  key={name}
-                  onPress={() => toggle(name)}
-                  disabled={isExisting}
-                  style={[styles.chip, isSelected && styles.chipSelected, isExisting && styles.chipExisting]}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: isSelected, disabled: isExisting }}
-                  accessibilityLabel={isExisting ? `${name}, ya existe` : name}
-                >
-                  <Text style={[styles.chipLabel, isSelected && styles.chipLabelSelected]}>{name}</Text>
-                  {/* La palomita siempre ocupa su lugar para que la opción no cambie de ancho. */}
-                  <Check
-                    size={14}
-                    color={isSelected ? Colors.primary : isExisting ? Colors.textSecondary : "transparent"}
-                    strokeWidth={iconStroke}
-                    absoluteStrokeWidth
-                  />
-                </Pressable>
-              );
-            })}
-          </View>
-        ))}
+        {[...PRESET_GROUPS, custom]
+          .filter((group) => group.length > 0)
+          .map((group) => (
+            <View key={group.join()} style={styles.chips}>
+              {group.map((name) => {
+                const isSelected = selected.includes(name);
+                const isExisting = existingNames.has(name.toLowerCase());
+                return (
+                  <Pressable
+                    key={name}
+                    onPress={() => toggle(name)}
+                    disabled={isExisting}
+                    style={[
+                      styles.chip,
+                      isSelected && styles.chipSelected,
+                      isExisting && styles.chipExisting,
+                    ]}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{
+                      checked: isSelected,
+                      disabled: isExisting,
+                    }}
+                    accessibilityLabel={
+                      isExisting ? `${name}, ya existe` : name
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.chipLabel,
+                        isSelected && styles.chipLabelSelected,
+                      ]}
+                    >
+                      {name}
+                    </Text>
+                    {/* La palomita siempre ocupa su lugar para que la opción no cambie de ancho. */}
+                    <Check
+                      size={14}
+                      color={
+                        isSelected
+                          ? Colors.primary
+                          : isExisting
+                            ? Colors.textSecondary
+                            : "transparent"
+                      }
+                      strokeWidth={iconStroke}
+                      absoluteStrokeWidth
+                    />
+                  </Pressable>
+                );
+              })}
+            </View>
+          ))}
 
         <ThemedTextInput
           label="O escribe otra opción"

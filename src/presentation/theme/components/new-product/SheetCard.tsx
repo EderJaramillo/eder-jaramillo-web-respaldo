@@ -8,7 +8,6 @@ interface Props {
   children: ReactNode;
 }
 
-// Bottom sheet del Figma: agarre, título y contenido.
 const SheetCard = ({ title, children }: Props) => {
   return (
     <View style={styles.sheet}>

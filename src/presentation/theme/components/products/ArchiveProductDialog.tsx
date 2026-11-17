@@ -11,7 +11,6 @@ interface Props {
   onClose: () => void;
 }
 
-// Fase 4 / 12: confirmar antes de archivar; al archivar se vuelve a la lista.
 const ArchiveProductDialog = ({ productId, visible, onClose }: Props) => {
   const dispatch = useAppDispatch();
   const [isArchiving, setIsArchiving] = useState(false);

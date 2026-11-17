@@ -14,13 +14,12 @@ interface Props {
   visible: boolean;
   modelName: string;
   variant: DraftVariant | null;
-  // ¿Hay otro modelo visible? Si no, ocultar este también oculta el producto.
+
   isLastVisibleModel: boolean;
   onHideModel: () => void;
   onClose: () => void;
 }
 
-// Fase 3 / 29: la última variante visible no se puede ocultar; se oculta el modelo.
 const LastVariantSheet = ({
   visible,
   modelName,
@@ -32,7 +31,11 @@ const LastVariantSheet = ({
   const [isDone, setIsDone] = useState(false);
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} onShow={() => setIsDone(false)}>
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      onShow={() => setIsDone(false)}
+    >
       <SheetCard title={`Modelo ${modelName}`}>
         {variant && (
           <View style={styles.card}>
@@ -43,10 +46,20 @@ const LastVariantSheet = ({
                   Costo ${variant.cost} · Venta ${variant.price}
                 </ThemedText>
               </View>
-              <VisibleSwitch label={`Variante ${variant.name}`} value locked onChange={() => {}} />
+              <VisibleSwitch
+                label={`Variante ${variant.name}`}
+                value
+                locked
+                onChange={() => {}}
+              />
             </View>
-            <InfoBanner tone="warning" message="Es la única variante visible de este modelo." />
-            <ThemedText>Para ocultarla, oculta el modelo en su lugar.</ThemedText>
+            <InfoBanner
+              tone="warning"
+              message="Es la única variante visible de este modelo."
+            />
+            <ThemedText>
+              Para ocultarla, oculta el modelo en su lugar.
+            </ThemedText>
             {!isDone && (
               <ThemedButton
                 title="Ocultar modelo"

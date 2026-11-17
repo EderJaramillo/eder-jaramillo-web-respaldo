@@ -1,5 +1,3 @@
-// Tokens tomados del Figma "Catalog Mobile" (Mapa de la experiencia → Marca y accesibilidad).
-// El diseño solo tiene modo claro.
 export const Colors = {
   primary: "#60269E",
   secondary: "#00AEC7",
@@ -52,8 +50,6 @@ export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
 
 export const radius = { sm: 10, md: 12, lg: 16, xl: 20, full: 999 };
 
-// Altura mínima de cualquier elemento tocable (Figma: Targets ≥48).
 export const touchTarget = 48;
 
-// Grosor de todos los íconos del Figma (Lucide), sin importar su tamaño.
 export const iconStroke = 1.8;

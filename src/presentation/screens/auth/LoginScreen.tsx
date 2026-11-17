@@ -17,7 +17,11 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const LoginScreen = () => {
   const dispatch = useAppDispatch();
-  const { status, error, remember: rememberedPreference } = useAppSelector((s) => s.auth);
+  const {
+    status,
+    error,
+    remember: rememberedPreference,
+  } = useAppSelector((s) => s.auth);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,14 +31,15 @@ const LoginScreen = () => {
   const isLoading = status === "loading";
   const emailIsValid = EMAIL_REGEX.test(email.trim());
 
-  // El correo se valida mientras se escribe; los vacíos solo al intentar entrar.
+  // El correo se valida mientras se escribe
   const emailError =
     email.length > 0 && !emailIsValid
       ? "Correo inválido"
       : submitted && email.length === 0
         ? "Campo requerido"
         : null;
-  const passwordError = submitted && password.length === 0 ? "Campo requerido" : null;
+  const passwordError =
+    submitted && password.length === 0 ? "Campo requerido" : null;
 
   const onChange = (setter: (v: string) => void) => (value: string) => {
     setter(value);
@@ -48,7 +53,10 @@ const LoginScreen = () => {
   };
 
   const onBiometric = () => {
-    Alert.alert("Próximamente", "El acceso con Face ID / huella estará disponible pronto.");
+    Alert.alert(
+      "Próximamente",
+      "El acceso con Face ID / huella estará disponible pronto.",
+    );
   };
 
   return (
@@ -113,7 +121,11 @@ const LoginScreen = () => {
         onSubmitEditing={onLogin}
       />
 
-      <ThemedCheckbox label="Recordarme" checked={remember} onChange={setRemember} />
+      <ThemedCheckbox
+        label="Recordarme"
+        checked={remember}
+        onChange={setRemember}
+      />
 
       {isLoading && <InfoBanner message="Estamos entrando a tu negocio…" />}
       {error && !isLoading && <InfoBanner tone="error" message={error} />}

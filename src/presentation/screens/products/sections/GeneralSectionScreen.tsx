@@ -1,5 +1,14 @@
-import { Colors, fonts, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { saveGeneralInfo, updateDraft } from "@/features/products/newProductSlice";
+import {
+  Colors,
+  fonts,
+  iconStroke,
+  radius,
+  spacing,
+} from "@/config/theme/theme";
+import {
+  saveGeneralInfo,
+  updateDraft,
+} from "@/features/products/newProductSlice";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import CategorySheet from "@/presentation/theme/components/new-product/CategorySheet";
 import DescriptionField from "@/presentation/theme/components/new-product/DescriptionField";
@@ -15,18 +24,27 @@ import { useAfterSave, useSnapshot } from "./useSectionSaved";
 
 const MAX_NAME_LENGTH = 100;
 
-// Fase 4 / 05: nombre, SKU, categoría y descripción.
 const GeneralSectionScreen = () => {
   const dispatch = useAppDispatch();
   const afterSave = useAfterSave();
-  const { name, sku, category, description, isSaving } = useAppSelector((s) => s.newProduct);
+  const { name, sku, category, description, isSaving } = useAppSelector(
+    (s) => s.newProduct,
+  );
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const { isDirty } = useSnapshot({ name, sku, category: category?.id ?? null, description });
+  const { isDirty } = useSnapshot({
+    name,
+    sku,
+    category: category?.id ?? null,
+    description,
+  });
 
-  const isValid = name.trim().length > 0 && !!category && description.trim().length > 0;
+  const isValid =
+    name.trim().length > 0 && !!category && description.trim().length > 0;
 
   const onSave = async () => {
-    const result = await dispatch(saveGeneralInfo({ name, sku, description, category }));
+    const result = await dispatch(
+      saveGeneralInfo({ name, sku, description, category }),
+    );
     if (saveGeneralInfo.fulfilled.match(result)) afterSave();
   };
 
@@ -46,7 +64,9 @@ const GeneralSectionScreen = () => {
         ) : undefined
       }
     >
-      {isDirty && <InfoBanner message="Tienes cambios sin guardar en esta sección." />}
+      {isDirty && (
+        <InfoBanner message="Tienes cambios sin guardar en esta sección." />
+      )}
 
       <ThemedTextInput
         label="Nombre del producto *"
@@ -73,10 +93,18 @@ const GeneralSectionScreen = () => {
           accessibilityRole="button"
           accessibilityLabel="Categoría"
         >
-          <Text style={[styles.selectText, category && styles.selectValue]} numberOfLines={1}>
+          <Text
+            style={[styles.selectText, category && styles.selectValue]}
+            numberOfLines={1}
+          >
             {category?.name ?? "Elige una categoría"}
           </Text>
-          <ChevronDown size={16} color={Colors.textSecondary} strokeWidth={iconStroke} absoluteStrokeWidth />
+          <ChevronDown
+            size={16}
+            color={Colors.textSecondary}
+            strokeWidth={iconStroke}
+            absoluteStrokeWidth
+          />
         </Pressable>
       </View>
 
@@ -88,7 +116,10 @@ const GeneralSectionScreen = () => {
 
       <InfoBanner message="Los cambios de esta sección no modifican tus fotos ni precios." />
 
-      <CategorySheet visible={isCategoryOpen} onClose={() => setIsCategoryOpen(false)} />
+      <CategorySheet
+        visible={isCategoryOpen}
+        onClose={() => setIsCategoryOpen(false)}
+      />
     </NewProductLayout>
   );
 };

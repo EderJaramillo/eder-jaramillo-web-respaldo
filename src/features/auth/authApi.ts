@@ -1,7 +1,10 @@
 import { apiRequest } from "@/config/api/api";
 import type { AuthUser, LoginResponse, Session } from "./authTypes";
 
-export async function loginRequest(email: string, password: string): Promise<Session> {
+export async function loginRequest(
+  email: string,
+  password: string,
+): Promise<Session> {
   const data = await apiRequest<LoginResponse>("/auth/login/", {
     method: "POST",
     body: { email, password },
@@ -9,8 +12,11 @@ export async function loginRequest(email: string, password: string): Promise<Ses
 
   const jwt = data.access ?? data.access_token;
   if (jwt) {
-    // Swagger: "Use Authorization: JWT <token>"
-    return { authorization: `JWT ${jwt}`, refresh: data.refresh ?? data.refresh_token ?? null };
+    //Comprobacion de conexion
+    return {
+      authorization: `JWT ${jwt}`,
+      refresh: data.refresh ?? data.refresh_token ?? null,
+    };
   }
 
   const key = data.key ?? data.token;
@@ -26,7 +32,10 @@ export function getUserRequest(authorization: string) {
 }
 
 export function logoutRequest(authorization: string) {
-  return apiRequest<unknown>("/auth/logout/", { method: "POST", authorization });
+  return apiRequest<unknown>("/auth/logout/", {
+    method: "POST",
+    authorization,
+  });
 }
 
 export function passwordResetRequest(email: string) {

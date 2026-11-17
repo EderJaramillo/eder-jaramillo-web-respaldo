@@ -13,7 +13,6 @@ import { router, type Href } from "expo-router";
 import { Check, CircleCheck, Plus, Share2, X } from "lucide-react-native";
 import { Share, StyleSheet, View } from "react-native";
 
-// Fase 3 / 40: el producto ya está visible.
 const PublishedScreen = () => {
   const dispatch = useAppDispatch();
   const published = useAppSelector((s) => s.newProduct.published);
@@ -42,14 +41,17 @@ const PublishedScreen = () => {
       }
       footer={
         <>
-          <ThemedButton title="Agregar otro producto" icon={Plus} onPress={addAnother} />
+          <ThemedButton
+            title="Agregar otro producto"
+            icon={Plus}
+            onPress={addAnother}
+          />
           <View style={styles.row}>
             <View style={styles.flex}>
               <ThemedButton
                 title="Ver producto"
                 variant="outline"
                 onPress={() => {
-                  // Fase 4: se cierra el alta y se abre el detalle del producto recién publicado.
                   leave();
                   if (productId) {
                     router.push(`/product/${productId}` as Href);
@@ -62,7 +64,11 @@ const PublishedScreen = () => {
                 title="Compartir"
                 variant="outline"
                 icon={Share2}
-                onPress={() => Share.share({ message: `${name} ya está disponible en nuestra tienda.` })}
+                onPress={() =>
+                  Share.share({
+                    message: `${name} ya está disponible en nuestra tienda.`,
+                  })
+                }
               />
             </View>
           </View>
@@ -70,7 +76,11 @@ const PublishedScreen = () => {
       }
     >
       {published?.photo && (
-        <Image source={published.photo} style={styles.photo} contentFit="cover" />
+        <Image
+          source={published.photo}
+          style={styles.photo}
+          contentFit="cover"
+        />
       )}
 
       <EmptyState
@@ -80,7 +90,12 @@ const PublishedScreen = () => {
       />
 
       <View style={styles.chip}>
-        <CircleCheck size={14} color={Colors.successText} strokeWidth={iconStroke} absoluteStrokeWidth />
+        <CircleCheck
+          size={14}
+          color={Colors.successText}
+          strokeWidth={iconStroke}
+          absoluteStrokeWidth
+        />
         <ThemedText variant="caption" color={Colors.successText}>
           Visible
         </ThemedText>

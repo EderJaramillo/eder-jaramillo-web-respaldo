@@ -5,28 +5,27 @@ import {
   startEditingLabels,
   toggleLabel,
 } from "@/features/products/newProductSlice";
+import { useAfterSave } from "@/presentation/screens/products/sections/useSectionSaved";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import NewProductLayout from "@/presentation/theme/components/new-product/NewProductLayout";
 import FilterChip from "@/presentation/theme/components/products/FilterChip";
 import ThemedButton from "@/presentation/theme/components/ThemedButton";
 import ThemedText from "@/presentation/theme/components/ThemedText";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useAfterSave } from "@/presentation/screens/products/sections/useSectionSaved";
 import { router } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
-// Fase 3 / 37: cada filtro es una tarjeta con sus etiquetas; se pueden elegir varias.
 const LabelsScreen = () => {
   const dispatch = useAppDispatch();
-  const { filterCatalog, labelSelection, appliedLabels, isSaving, mode } = useAppSelector(
-    (s) => s.newProduct,
-  );
+  const { filterCatalog, labelSelection, appliedLabels, isSaving, mode } =
+    useAppSelector((s) => s.newProduct);
   const isEdit = mode === "edit";
   const afterSave = useAfterSave();
   const applied = appliedLabels.map((a) => a.labelId).sort();
-  const isDirty = JSON.stringify([...labelSelection].sort()) !== JSON.stringify(applied);
+  const isDirty =
+    JSON.stringify([...labelSelection].sort()) !== JSON.stringify(applied);
 
   useEffect(() => {
     dispatch(startEditingLabels());
@@ -36,7 +35,9 @@ const LabelsScreen = () => {
   const groups = filterCatalog.filters
     .map((filter) => ({
       filter,
-      labels: filterCatalog.labels.filter((label) => label.filter === filter.id),
+      labels: filterCatalog.labels.filter(
+        (label) => label.filter === filter.id,
+      ),
     }))
     .filter((group) => group.labels.length > 0);
 

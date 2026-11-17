@@ -1,5 +1,8 @@
 import { Colors, radius, spacing } from "@/config/theme/theme";
-import { referencePrice, saveTaxesAndChannels } from "@/features/products/newProductSlice";
+import {
+  referencePrice,
+  saveTaxesAndChannels,
+} from "@/features/products/newProductSlice";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import NewProductLayout from "@/presentation/theme/components/new-product/NewProductLayout";
 import PricePreview from "@/presentation/theme/components/new-product/PricePreview";
@@ -12,7 +15,6 @@ import { StyleSheet, View } from "react-native";
 import { offerSummary } from "./TaxesSectionScreen";
 import { useAfterSave } from "./useSectionSaved";
 
-// Fase 4 / 08: tienda en línea y punto de venta son independientes.
 const ChannelsSectionScreen = () => {
   const dispatch = useAppDispatch();
   const afterSave = useAfterSave();
@@ -20,12 +22,18 @@ const ChannelsSectionScreen = () => {
   const [showOnStore, setShowOnStore] = useState(draft.showOnStore);
   const [showOnPos, setShowOnPos] = useState(draft.showOnPos);
 
-  const isDirty = showOnStore !== draft.showOnStore || showOnPos !== draft.showOnPos;
+  const isDirty =
+    showOnStore !== draft.showOnStore || showOnPos !== draft.showOnPos;
   const { price, offer } = referencePrice(draft);
 
   const onSave = async () => {
     const result = await dispatch(
-      saveTaxesAndChannels({ ivaRate: draft.ivaRate, iepsRate: draft.iepsRate, showOnStore, showOnPos }),
+      saveTaxesAndChannels({
+        ivaRate: draft.ivaRate,
+        iepsRate: draft.iepsRate,
+        showOnStore,
+        showOnPos,
+      }),
     );
     if (saveTaxesAndChannels.fulfilled.match(result)) afterSave();
   };
@@ -49,19 +57,32 @@ const ChannelsSectionScreen = () => {
       <ThemedText variant="title">Dónde mostrar tu producto</ThemedText>
 
       <View style={styles.card}>
-        <ThemedCheckbox label="Tienda en línea / Catálogo" checked={showOnStore} onChange={setShowOnStore} />
-        <ThemedCheckbox label="Punto de venta" checked={showOnPos} onChange={setShowOnPos} />
+        <ThemedCheckbox
+          label="Tienda en línea / Catálogo"
+          checked={showOnStore}
+          onChange={setShowOnStore}
+        />
+        <ThemedCheckbox
+          label="Punto de venta"
+          checked={showOnPos}
+          onChange={setShowOnPos}
+        />
       </View>
 
       {!showOnStore && !showOnPos ? (
-        <InfoBanner tone="error" message="Elige al menos un canal para mostrar el producto." />
+        <InfoBanner
+          tone="error"
+          message="Elige al menos un canal para mostrar el producto."
+        />
       ) : (
         <InfoBanner message="Cada canal es independiente. Puedes vender en uno o en ambos." />
       )}
 
       <View style={[styles.card, styles.offer]}>
         <ThemedText variant="subtitle">Oferta del producto</ThemedText>
-        <ThemedText color={Colors.textSecondary}>{offerSummary(offer)}</ThemedText>
+        <ThemedText color={Colors.textSecondary}>
+          {offerSummary(offer)}
+        </ThemedText>
       </View>
 
       <PricePreview

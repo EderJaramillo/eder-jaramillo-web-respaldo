@@ -1,9 +1,12 @@
 import { File, Paths } from "expo-file-system";
 
 // El borrador del producto se guarda en el teléfono para poder retomarlo si la app se cierra.
-// Un archivo por negocio, así no se mezclan borradores entre negocios.
+// Se dejo solo un archivo por negocio para no mezclar con otros usuario o negociso
 const draftFile = (businessSlug: string) =>
-  new File(Paths.document, `borrador-producto-${businessSlug.replace(/[^a-z0-9_-]/gi, "_")}.json`);
+  new File(
+    Paths.document,
+    `borrador-producto-${businessSlug.replace(/[^a-z0-9_-]/gi, "_")}.json`,
+  );
 
 export function saveDraftFile(businessSlug: string, draft: object) {
   try {
@@ -27,7 +30,5 @@ export function deleteDraftFile(businessSlug: string) {
   try {
     const file = draftFile(businessSlug);
     if (file.exists) file.delete();
-  } catch {
-    // Nada que hacer: el archivo ya no está o no se puede tocar.
-  }
+  } catch {}
 }

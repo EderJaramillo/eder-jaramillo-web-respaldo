@@ -15,7 +15,7 @@ interface Props {
   priceLabel?: string;
 }
 
-// Costo + precio, margen y "Tu cliente paga" (se repite en Simple, modelos y variantes).
+// Costo + precio, margen y "Tu cliente paga"
 const PriceFields = ({
   cost,
   price,
@@ -33,8 +33,16 @@ const PriceFields = ({
   return (
     <>
       <View style={styles.row}>
-        <AmountField label={costLabel} value={cost} onChange={(value) => onChange({ cost: value })} />
-        <AmountField label={priceLabel} value={price} onChange={(value) => onChange({ price: value })} />
+        <AmountField
+          label={costLabel}
+          value={cost}
+          onChange={(value) => onChange({ cost: value })}
+        />
+        <AmountField
+          label={priceLabel}
+          value={price}
+          onChange={(value) => onChange({ price: value })}
+        />
       </View>
       {hasAmounts && (
         <InfoBanner
@@ -42,7 +50,9 @@ const PriceFields = ({
           message={`Tu margen: ${margin < 0 ? "-" : ""}$${Math.abs(margin)} · antes de impuestos`}
         />
       )}
-      {hasAmounts && showPreview && <PricePreview price={priceValue} offer={offer} />}
+      {hasAmounts && showPreview && (
+        <PricePreview price={priceValue} offer={offer} />
+      )}
     </>
   );
 };

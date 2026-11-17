@@ -1,7 +1,14 @@
 import { Colors, spacing } from "@/config/theme/theme";
 import type { ReactNode } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Toasts } from "./NoticesHost";
 
 interface Props {
   children: ReactNode;
@@ -10,9 +17,12 @@ interface Props {
   compactTop?: boolean;
 }
 
-// Estructura que repiten todas las pantallas del Figma:
-// barra de aplicación (opcional) + contenido desplazable + acciones inferiores fijas.
-const ScreenLayout = ({ children, header, footer, compactTop = false }: Props) => {
+const ScreenLayout = ({
+  children,
+  header,
+  footer,
+  compactTop = false,
+}: Props) => {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       {header}
@@ -22,12 +32,16 @@ const ScreenLayout = ({ children, header, footer, compactTop = false }: Props) =
       >
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={[styles.content, compactTop && styles.compactTop]}
+          contentContainerStyle={[
+            styles.content,
+            compactTop && styles.compactTop,
+          ]}
           keyboardShouldPersistTaps="handled"
         >
           {children}
         </ScrollView>
         {footer ? <View style={styles.footer}>{footer}</View> : null}
+        <Toasts />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -46,7 +60,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: spacing.lg,
-    // Figma: 16 de margen + 15 de la línea vacía + 12 de separación.
+
     paddingTop: 43,
     gap: spacing.md,
   },

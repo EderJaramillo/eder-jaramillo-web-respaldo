@@ -8,23 +8,32 @@ import {
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
 import BarcodeField from "@/presentation/theme/components/new-product/BarcodeField";
 import NewProductLayout from "@/presentation/theme/components/new-product/NewProductLayout";
-import OfferSheet, { OfferRow } from "@/presentation/theme/components/new-product/OfferSheet";
+import OfferSheet, {
+  OfferRow,
+} from "@/presentation/theme/components/new-product/OfferSheet";
 import PricePreview from "@/presentation/theme/components/new-product/PricePreview";
 import ThemedButton from "@/presentation/theme/components/ThemedButton";
 import ThemedCheckbox from "@/presentation/theme/components/ThemedCheckbox";
 import ThemedText from "@/presentation/theme/components/ThemedText";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useState } from "react";
 import { router } from "expo-router";
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
-// Fase 3 / 15 con oferta (30) y código duplicado (31). "Continuar" guarda precio, canales
-// y fotos y pasa al paso 4 (publicación).
 const SimpleChannelsScreen = () => {
   const dispatch = useAppDispatch();
-  const { name, price, barcode, showOnStore, showOnPos, simpleOffer, isSaving, ivaRate, iepsRate } =
-    useAppSelector((s) => s.newProduct);
-  // Si ya se definieron impuestos (paso 4) y se vuelve aquí, la vista previa los incluye.
+  const {
+    name,
+    price,
+    barcode,
+    showOnStore,
+    showOnPos,
+    simpleOffer,
+    isSaving,
+    ivaRate,
+    iepsRate,
+  } = useAppSelector((s) => s.newProduct);
+
   const taxes = { iva: Number(ivaRate), ieps: Number(iepsRate) };
   const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [barcodeInUse, setBarcodeInUse] = useState(false);
@@ -32,7 +41,9 @@ const SimpleChannelsScreen = () => {
 
   const onContinue = async () => {
     setIsChecking(true);
-    const check = await dispatch(checkBarcodeInUse({ barcode, variantKey: null }));
+    const check = await dispatch(
+      checkBarcodeInUse({ barcode, variantKey: null }),
+    );
     setIsChecking(false);
     if (!checkBarcodeInUse.fulfilled.match(check)) return;
     if (check.payload) {
@@ -41,7 +52,8 @@ const SimpleChannelsScreen = () => {
     }
 
     const result = await dispatch(saveSimpleProduct());
-    if (saveSimpleProduct.fulfilled.match(result)) router.push("/new-product/publish");
+    if (saveSimpleProduct.fulfilled.match(result))
+      router.push("/new-product/publish");
   };
 
   return (
@@ -66,7 +78,11 @@ const SimpleChannelsScreen = () => {
           setBarcodeInUse(false);
           dispatch(updateDraft({ barcode: text }));
         }}
-        error={barcodeInUse ? "Este código de barras ya está en uso en otro producto" : null}
+        error={
+          barcodeInUse
+            ? "Este código de barras ya está en uso en otro producto"
+            : null
+        }
       />
 
       <OfferRow offer={simpleOffer} onPress={() => setIsOfferOpen(true)} />
@@ -76,7 +92,9 @@ const SimpleChannelsScreen = () => {
         <ThemedCheckbox
           label="Tienda en línea / Catálogo"
           checked={showOnStore}
-          onChange={(checked) => dispatch(updateDraft({ showOnStore: checked }))}
+          onChange={(checked) =>
+            dispatch(updateDraft({ showOnStore: checked }))
+          }
         />
         <ThemedCheckbox
           label="Punto de venta"
@@ -88,7 +106,10 @@ const SimpleChannelsScreen = () => {
       <PricePreview price={Number(price)} offer={simpleOffer} taxes={taxes} />
 
       {!isOfferValid(simpleOffer) ? (
-        <InfoBanner tone="error" message="Para una oferta, elige al menos un canal." />
+        <InfoBanner
+          tone="error"
+          message="Para una oferta, elige al menos un canal."
+        />
       ) : (
         <InfoBanner message="Para una oferta, elige al menos un canal. Los impuestos se definen en el siguiente paso." />
       )}

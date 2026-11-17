@@ -9,7 +9,13 @@ import {
   type DraftPhoto,
 } from "@/features/products/newProductSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { Camera, ChevronRight, Circle, CircleDot, Copy } from "lucide-react-native";
+import {
+  Camera,
+  ChevronRight,
+  Circle,
+  CircleDot,
+  Copy,
+} from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import InfoBanner from "../InfoBanner";
@@ -19,8 +25,8 @@ import ThemedText from "../ThemedText";
 import ThemedTextInput from "../ThemedTextInput";
 import BottomSheet from "./BottomSheet";
 import PhotoSourceContent from "./PhotoSourceContent";
-import PricePreview from "./PricePreview";
 import PriceFields from "./PriceFields";
+import PricePreview from "./PricePreview";
 import SheetCard from "./SheetCard";
 
 type Mode = "form" | "photos" | "copy";
@@ -32,7 +38,6 @@ interface Props {
   onClose: () => void;
 }
 
-// Fase 3 / 21 (agregar modelo), 22 (copiar precio) y 27 (modelo con variantes copiadas).
 const AddModelSheet = ({ visible, withPrice, onClose }: Props) => {
   const dispatch = useAppDispatch();
   const { models, isSaving, error } = useAppSelector((s) => s.newProduct);
@@ -46,9 +51,13 @@ const AddModelSheet = ({ visible, withPrice, onClose }: Props) => {
   const [copyVariants, setCopyVariants] = useState(true);
 
   const priced = models.filter((m) => m.variants.some(hasPrice));
-  const copySource = priced.find((m) => m.key === copyFromKey)?.variants.find(hasPrice);
-  // Fase 3 / 27: el modelo principal sirve de plantilla de variantes.
-  const template = withPrice ? undefined : models.find((m) => m.variants.length > 0);
+  const copySource = priced
+    .find((m) => m.key === copyFromKey)
+    ?.variants.find(hasPrice);
+
+  const template = withPrice
+    ? undefined
+    : models.find((m) => m.variants.length > 0);
 
   const onShow = () => {
     setMode("form");
@@ -85,14 +94,18 @@ const AddModelSheet = ({ visible, withPrice, onClose }: Props) => {
       <PhotoSourceContent
         modelName={name.trim()}
         remaining={MAX_PHOTOS - photos.length}
-        onAdd={(added) => setPhotos((current) => [...current, ...added].slice(0, MAX_PHOTOS))}
+        onAdd={(added) =>
+          setPhotos((current) => [...current, ...added].slice(0, MAX_PHOTOS))
+        }
         onDone={() => setMode("form")}
       />
     );
   } else if (mode === "copy") {
     content = (
       <SheetCard title="Copiar precio">
-        <ThemedText>Elige el modelo del que quieres copiar costo y precio.</ThemedText>
+        <ThemedText>
+          Elige el modelo del que quieres copiar costo y precio.
+        </ThemedText>
         {priced.map((model) => {
           const variant = model.variants.find(hasPrice)!;
           const isSelected = model.key === copyFromKey;
@@ -130,12 +143,18 @@ const AddModelSheet = ({ visible, withPrice, onClose }: Props) => {
             setMode("form");
           }}
         />
-        <ThemedButton title="Volver" variant="text" onPress={() => setMode("form")} />
+        <ThemedButton
+          title="Volver"
+          variant="text"
+          onPress={() => setMode("form")}
+        />
       </SheetCard>
     );
   } else {
     content = (
-      <SheetCard title={name.trim() ? `Agregar modelo ${name.trim()}` : "Agregar modelo"}>
+      <SheetCard
+        title={name.trim() ? `Agregar modelo ${name.trim()}` : "Agregar modelo"}
+      >
         <ThemedText variant="caption" color={Colors.primary}>
           1 Nombre → 2 Cámara{withPrice ? " → 3 Precio" : ""}
         </ThemedText>
@@ -151,7 +170,12 @@ const AddModelSheet = ({ visible, withPrice, onClose }: Props) => {
           style={styles.row}
           accessibilityRole="button"
         >
-          <Camera size={24} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+          <Camera
+            size={24}
+            color={Colors.primary}
+            strokeWidth={iconStroke}
+            absoluteStrokeWidth
+          />
           <View style={styles.flex}>
             <ThemedText variant="bodyMedium">Agregar fotos</ThemedText>
             <ThemedText variant="caption" color={Colors.textSecondary}>
@@ -201,7 +225,10 @@ const AddModelSheet = ({ visible, withPrice, onClose }: Props) => {
               <View style={styles.copyCard}>
                 {template.variants.map((v) => (
                   <ThemedText key={v.key}>
-                    {v.name} · {hasPrice(v) ? `$${v.price} · Costo $${v.cost}` : "Sin precio"}
+                    {v.name} ·{" "}
+                    {hasPrice(v)
+                      ? `$${v.price} · Costo $${v.cost}`
+                      : "Sin precio"}
                   </ThemedText>
                 ))}
               </View>
@@ -217,7 +244,11 @@ const AddModelSheet = ({ visible, withPrice, onClose }: Props) => {
         )}
         {error && <InfoBanner tone="error" message={error} />}
         <ThemedButton
-          title={template && copyVariants ? "Crear modelo con variantes" : "Crear modelo"}
+          title={
+            template && copyVariants
+              ? "Crear modelo con variantes"
+              : "Crear modelo"
+          }
           loading={isSaving}
           loadingTitle="Guardando…"
           disabled={!name.trim()}

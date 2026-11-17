@@ -17,20 +17,35 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useState } from "react";
 import { useAfterSave, useSnapshot } from "./useSectionSaved";
 
-// Fase 4 / 06: fotos, costo, precio y código de barras del producto Simple.
 const SimplePricingSectionScreen = () => {
   const dispatch = useAppDispatch();
   const afterSave = useAfterSave();
-  const { name, cost, price, barcode, models, simpleOffer, ivaRate, iepsRate, isSaving } =
-    useAppSelector((s) => s.newProduct);
+  const {
+    name,
+    cost,
+    price,
+    barcode,
+    models,
+    simpleOffer,
+    ivaRate,
+    iepsRate,
+    isSaving,
+  } = useAppSelector((s) => s.newProduct);
   const photos = models[0]?.photos ?? [];
   const [barcodeInUse, setBarcodeInUse] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
-  const { isDirty } = useSnapshot({ cost, price, barcode, photos: photos.map((p) => p.uri) });
+  const { isDirty } = useSnapshot({
+    cost,
+    price,
+    barcode,
+    photos: photos.map((p) => p.uri),
+  });
 
   const onSave = async () => {
     setIsChecking(true);
-    const check = await dispatch(checkBarcodeInUse({ barcode, variantKey: null }));
+    const check = await dispatch(
+      checkBarcodeInUse({ barcode, variantKey: null }),
+    );
     setIsChecking(false);
     if (!checkBarcodeInUse.fulfilled.match(check)) return;
     if (check.payload) {
@@ -79,7 +94,11 @@ const SimplePricingSectionScreen = () => {
           setBarcodeInUse(false);
           dispatch(updateDraft({ barcode: text }));
         }}
-        error={barcodeInUse ? "Este código de barras ya está en uso en otro producto" : null}
+        error={
+          barcodeInUse
+            ? "Este código de barras ya está en uso en otro producto"
+            : null
+        }
       />
 
       <PricePreview
@@ -88,7 +107,9 @@ const SimplePricingSectionScreen = () => {
         taxes={{ iva: Number(ivaRate), ieps: Number(iepsRate) }}
       />
 
-      {isDirty && <InfoBanner message="Tienes cambios sin guardar. El tipo Simple no cambia." />}
+      {isDirty && (
+        <InfoBanner message="Tienes cambios sin guardar. El tipo Simple no cambia." />
+      )}
     </NewProductLayout>
   );
 };

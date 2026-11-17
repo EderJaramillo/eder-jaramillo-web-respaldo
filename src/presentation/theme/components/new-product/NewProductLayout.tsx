@@ -12,18 +12,23 @@ import InfoBanner from "../InfoBanner";
 import ScreenLayout from "../ScreenLayout";
 import ThemedText from "../ThemedText";
 
-const steps = ["Datos básicos", "Tipo de producto", "Fotos y precios", "Descripción y publicación"];
+const steps = [
+  "Datos básicos",
+  "Tipo de producto",
+  "Fotos y precios",
+  "Descripción y publicación",
+];
 
 interface Props {
   step: 1 | 2 | 3 | 4;
   children: ReactNode;
   footer?: ReactNode;
-  // Cuando el tipo ya es definitivo, volver equivale a salir.
+
   backExits?: boolean;
   title?: string;
-  // Texto del paso cuando la pantalla no usa el nombre normal ("Publicación").
+
   stepLabel?: string;
-  // Fase 4: al editar un producto ya creado se usa la barra de la sección, sin pasos.
+
   editTitle?: string;
   onEditMenu?: () => void;
 }
@@ -53,7 +58,6 @@ const NewProductLayout = ({
   const leave = useLeaveNewProduct();
   const [isExitOpen, setIsExitOpen] = useState(false);
 
-  // Antes del paso 1 no hay borrador que guardar.
   const onExit = () => (productId ? setIsExitOpen(true) : leave());
 
   if (mode === "edit") {

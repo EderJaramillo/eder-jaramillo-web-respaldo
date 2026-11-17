@@ -1,5 +1,9 @@
 import { apiRequest } from "@/config/api/api";
 import { File } from "expo-file-system";
+import {
+  FileSystemUploadType,
+  createUploadTask,
+} from "expo-file-system/legacy";
 import type {
   Category,
   PaginatedResponse,
@@ -8,27 +12,21 @@ import type {
   ProductDetail,
 } from "./productsTypes";
 
-// El fetch de Expo 58 no acepta el objeto { uri, name, type } de React Native en FormData:
-// pide un archivo con bytes(). File de expo-file-system lo es.
 function localFile(uri: string, name: string, type: string) {
   const file = new File(uri);
-  // Algunas rutas del selector no traen extensión: el nombre y el tipo van explícitos.
+
   try {
     Object.defineProperty(file, "name", { value: name });
     Object.defineProperty(file, "type", { value: type });
-  } catch {
-    // Si el objeto nativo no lo permite, se usan el nombre y tipo que deduce de la ruta.
-  }
+  } catch {}
   return file as unknown as Blob;
 }
 
-// Estas peticiones van a la base de datos del negocio, no al servidor central.
 export interface BusinessRequestContext {
   baseUrl: string;
   authorization: string;
 }
 
-// Campos del producto que escribe la app.
 export interface ProductChanges {
   name?: string;
   category?: number;
@@ -45,7 +43,10 @@ export interface ProductChanges {
 
 const PAGE_SIZE = 20;
 
-export function getProductsRequest(context: BusinessRequestContext, page: number) {
+export function getProductsRequest(
+  context: BusinessRequestContext,
+  page: number,
+) {
   return apiRequest<PaginatedResponse<Product>>(
     `/catalog/products/?page=${page}&items=${PAGE_SIZE}`,
     context,
@@ -53,10 +54,12 @@ export function getProductsRequest(context: BusinessRequestContext, page: number
 }
 
 export function getCategoriesRequest(context: BusinessRequestContext) {
-  return apiRequest<PaginatedResponse<Category>>("/catalog/categories/?items=100", context);
+  return apiRequest<PaginatedResponse<Category>>(
+    "/catalog/categories/?items=100",
+    context,
+  );
 }
 
-// Todas las imágenes guardadas del negocio. Cada una dice a qué modelo pertenece.
 export interface ModelImage {
   id: number;
   model: number;
@@ -71,24 +74,24 @@ export function getModelImagesRequest(context: BusinessRequestContext) {
   );
 }
 
-// Modelos del negocio, para saber de qué producto es cada imagen.
-// Ojo: aquí `product` llega como el objeto completo del producto, no como número.
 export function getModelsRequest(context: BusinessRequestContext) {
   return apiRequest<
-    PaginatedResponse<{ id: number; product: number | { id: number; name?: string }; name: string }>
-  >(
-    "/catalog/product_models/?items=100",
-    context,
-  );
+    PaginatedResponse<{
+      id: number;
+      product: number | { id: number; name?: string };
+      name: string;
+    }>
+  >("/catalog/product_models/?items=100", context);
 }
 
 export function getProductRequest(context: BusinessRequestContext, id: number) {
   return apiRequest<ProductDetail>(`/catalog/products/${id}/`, context);
 }
 
-// La API no busca por código: se recorren las presentaciones hasta encontrarlo.
-// Es solo lectura; /pos/pos_items/barcode/ no sirve porque agrega a una orden de venta.
-export async function findPresentationByBarcode(context: BusinessRequestContext, barcode: string) {
+export async function findPresentationByBarcode(
+  context: BusinessRequestContext,
+  barcode: string,
+) {
   let page = 1;
   while (true) {
     const data = await apiRequest<PaginatedResponse<Presentation>>(
@@ -102,7 +105,10 @@ export async function findPresentationByBarcode(context: BusinessRequestContext,
   }
 }
 
-export function createProductRequest(context: BusinessRequestContext, data: ProductChanges) {
+export function createProductRequest(
+  context: BusinessRequestContext,
+  data: ProductChanges,
+) {
   return apiRequest<{ id: number }>("/catalog/products/", {
     ...context,
     method: "POST",
@@ -110,7 +116,10 @@ export function createProductRequest(context: BusinessRequestContext, data: Prod
   });
 }
 
-export function createCategoryRequest(context: BusinessRequestContext, name: string) {
+export function createCategoryRequest(
+  context: BusinessRequestContext,
+  name: string,
+) {
   return apiRequest<Category>("/catalog/categories/", {
     ...context,
     method: "POST",
@@ -118,7 +127,11 @@ export function createCategoryRequest(context: BusinessRequestContext, name: str
   });
 }
 
-export function createModelRequest(context: BusinessRequestContext, product: number, name: string) {
+export function createModelRequest(
+  context: BusinessRequestContext,
+  product: number,
+  name: string,
+) {
   return apiRequest<{ id: number }>("/catalog/product_models/", {
     ...context,
     method: "POST",
@@ -173,8 +186,6 @@ export function updatePresentationRequest(
   });
 }
 
-// El servidor pide un archivo en "imgUploader" (foto del teléfono) o un "url"
-// (enlace o foto ya subida). Lo dice su propio mensaje de error; el Swagger no lo documenta.
 export function uploadModelImageRequest(
   context: BusinessRequestContext,
   modelId: number,
@@ -206,7 +217,6 @@ export function updateProductRequest(
   });
 }
 
-// Fase 3 / 37–38: un filtro agrupa etiquetas (Material → Algodón, Poliéster).
 export interface CatalogFilter {
   id: number;
   name: string;
@@ -229,14 +239,23 @@ export interface ProductFilterLink {
 }
 
 export function getFiltersRequest(context: BusinessRequestContext) {
-  return apiRequest<PaginatedResponse<CatalogFilter>>("/catalog/filters/?items=100", context);
+  return apiRequest<PaginatedResponse<CatalogFilter>>(
+    "/catalog/filters/?items=100",
+    context,
+  );
 }
 
 export function getLabelsRequest(context: BusinessRequestContext) {
-  return apiRequest<PaginatedResponse<CatalogLabel>>("/catalog/labels/?items=200", context);
+  return apiRequest<PaginatedResponse<CatalogLabel>>(
+    "/catalog/labels/?items=200",
+    context,
+  );
 }
 
-export function createFilterRequest(context: BusinessRequestContext, name: string) {
+export function createFilterRequest(
+  context: BusinessRequestContext,
+  name: string,
+) {
   return apiRequest<CatalogFilter>("/catalog/filters/", {
     ...context,
     method: "POST",
@@ -244,7 +263,11 @@ export function createFilterRequest(context: BusinessRequestContext, name: strin
   });
 }
 
-export function createLabelRequest(context: BusinessRequestContext, filter: number, name: string) {
+export function createLabelRequest(
+  context: BusinessRequestContext,
+  filter: number,
+  name: string,
+) {
   return apiRequest<CatalogLabel>("/catalog/labels/", {
     ...context,
     method: "POST",
@@ -263,11 +286,16 @@ export function createProductFilterRequest(
   });
 }
 
-export function deleteProductFilterRequest(context: BusinessRequestContext, id: number) {
-  return apiRequest<unknown>(`/catalog/product_filters/${id}/`, { ...context, method: "DELETE" });
+export function deleteProductFilterRequest(
+  context: BusinessRequestContext,
+  id: number,
+) {
+  return apiRequest<unknown>(`/catalog/product_filters/${id}/`, {
+    ...context,
+    method: "DELETE",
+  });
 }
 
-// Fase 3 / 39: PDFs del producto.
 export interface ProductDocument {
   id: number;
   product: number;
@@ -278,11 +306,12 @@ export interface ProductDocument {
 }
 
 export function getDocumentsRequest(context: BusinessRequestContext) {
-  return apiRequest<PaginatedResponse<ProductDocument>>("/catalog/documents/?items=100", context);
+  return apiRequest<PaginatedResponse<ProductDocument>>(
+    "/catalog/documents/?items=100",
+    context,
+  );
 }
 
-// Pendiente de confirmar con backend: el Swagger no dice en qué campo va el archivo.
-// Se manda en "file", junto con el producto y el nombre.
 export function uploadDocumentRequest(
   context: BusinessRequestContext,
   product: number,
@@ -291,16 +320,33 @@ export function uploadDocumentRequest(
   const form = new FormData();
   form.append("product", String(product));
   form.append("name", file.name);
-  form.append("file", localFile(file.uri, file.name, "application/pdf"), file.name);
-  return apiRequest<ProductDocument>("/catalog/documents/", { ...context, method: "POST", body: form });
+  form.append(
+    "file",
+    localFile(file.uri, file.name, "application/pdf"),
+    file.name,
+  );
+  return apiRequest<ProductDocument>("/catalog/documents/", {
+    ...context,
+    method: "POST",
+    body: form,
+  });
 }
 
-export function deleteDocumentRequest(context: BusinessRequestContext, id: number) {
-  return apiRequest<unknown>(`/catalog/documents/${id}/`, { ...context, method: "DELETE" });
+export function deleteDocumentRequest(
+  context: BusinessRequestContext,
+  id: number,
+) {
+  return apiRequest<unknown>(`/catalog/documents/${id}/`, {
+    ...context,
+    method: "DELETE",
+  });
 }
 
 // La API no filtra por producto en estos listados: se traen y se filtran aquí.
-export async function getProductFiltersRequest(context: BusinessRequestContext, product: number) {
+export async function getProductFiltersRequest(
+  context: BusinessRequestContext,
+  product: number,
+) {
   const page = await apiRequest<PaginatedResponse<ProductFilterLink>>(
     "/catalog/product_filters/?items=500",
     context,
@@ -308,7 +354,95 @@ export async function getProductFiltersRequest(context: BusinessRequestContext, 
   return page.results.filter((link) => link.product === product);
 }
 
-export async function getProductDocumentsRequest(context: BusinessRequestContext, product: number) {
+export async function getProductDocumentsRequest(
+  context: BusinessRequestContext,
+  product: number,
+) {
   const page = await getDocumentsRequest(context);
   return page.results.filter((doc) => doc.product === product);
+}
+
+export async function uploadModelImageWithProgress(
+  context: BusinessRequestContext,
+  modelId: number,
+  photo: { uri: string; source: "device" | "url" | "existing" },
+  onProgress: (fraction: number) => void,
+) {
+  if (photo.source !== "device") {
+    await uploadModelImageRequest(context, modelId, photo);
+    onProgress(1);
+    return;
+  }
+  const task = createUploadTask(
+    `${context.baseUrl}/catalog/product_models/${modelId}/image/`,
+    photo.uri,
+    {
+      httpMethod: "PUT",
+      uploadType: FileSystemUploadType.MULTIPART,
+      fieldName: "imgUploader",
+      mimeType: "image/jpeg",
+      headers: {
+        Authorization: context.authorization,
+        Accept: "application/json",
+      },
+    },
+    ({ totalBytesSent, totalBytesExpectedToSend }) => {
+      if (totalBytesExpectedToSend > 0)
+        onProgress(Math.min(totalBytesSent / totalBytesExpectedToSend, 0.99));
+    },
+  );
+  let result;
+  try {
+    result = await task.uploadAsync();
+  } catch {
+    throw new Error("Sin conexión. Revisa tu internet e intenta nuevamente.");
+  }
+  if (!result || result.status >= 400) {
+    let message = "No se pudo subir la foto.";
+    try {
+      const body = JSON.parse(result?.body ?? "{}");
+      if (typeof body.detail === "string") message = body.detail;
+      else if (typeof body.error === "string") message = body.error;
+    } catch {}
+    throw new Error(message);
+  }
+  onProgress(1);
+}
+
+export async function getModelImageListRequest(
+  context: BusinessRequestContext,
+  modelId: number,
+) {
+  const data = await apiRequest<ModelImage[] | PaginatedResponse<ModelImage>>(
+    `/catalog/product_models/${modelId}/images/`,
+    context,
+  );
+  return Array.isArray(data) ? data : data.results;
+}
+
+export function deleteModelImageRequest(
+  context: BusinessRequestContext,
+  modelId: number,
+  imageId: number,
+) {
+  return apiRequest<unknown>(`/catalog/product_models/${modelId}/image/`, {
+    ...context,
+    method: "DELETE",
+    body: { image_id: imageId },
+  });
+}
+
+export function orderModelImagesRequest(
+  context: BusinessRequestContext,
+  modelId: number,
+  order: number[],
+) {
+  return apiRequest<unknown>(
+    `/catalog/product_models/${modelId}/images/order/`,
+    {
+      ...context,
+      method: "PUT",
+      body: { order },
+    },
+  );
 }

@@ -1,6 +1,15 @@
+import { setUnauthorizedHandler } from "@/config/api/api";
 import authReducer from "@/features/auth/authSlice";
 import businessReducer from "@/features/business/businessSlice";
-import { deleteDraftFile, saveDraftFile } from "@/features/products/draftStorage";
+import galleryReducer from "@/features/gallery/gallerySlice";
+import noticesReducer, {
+  sessionExpired,
+} from "@/features/notices/noticesSlice";
+import { toastListener } from "@/features/notices/toastListener";
+import {
+  deleteDraftFile,
+  saveDraftFile,
+} from "@/features/products/draftStorage";
 import newProductReducer, {
   publishProduct,
   resetDraft,
@@ -16,6 +25,8 @@ const rootReducer = {
   products: productsReducer,
   newProduct: newProductReducer,
   productDetail: productDetailReducer,
+  gallery: galleryReducer,
+  notices: noticesReducer,
 };
 
 // Cada cambio del borrador se guarda en el teléfono; al publicar o salir se borra.
@@ -23,21 +34,23 @@ const draftListener = createListenerMiddleware();
 draftListener.startListening({
   predicate: (action) => action.type.startsWith("newProduct/"),
   effect: async (action, api) => {
-    const state = api.getState() as { business: { activeSlug: string | null }; newProduct: Parameters<typeof toSavedDraft>[0] };
+    const state = api.getState() as {
+      business: { activeSlug: string | null };
+      newProduct: Parameters<typeof toSavedDraft>[0];
+    };
     const slug = state.business.activeSlug;
     if (!slug) return;
-    // Editar un producto ya creado (Fase 4) no es un borrador: no se guarda ni se borra.
+    // Editar un producto ya creado
     const before = (api.getOriginalState() as typeof state).newProduct;
     if (resetDraft.match(action) || publishProduct.fulfilled.match(action)) {
       if (before.mode !== "edit") deleteDraftFile(slug);
       return;
     }
     if (state.newProduct.mode === "edit") return;
-    // Agrupa ráfagas de cambios (por ejemplo, al escribir) en una sola escritura.
+    // Agrupa ráfagas de cambios
     api.cancelActiveListeners();
     await api.delay(400);
     const draft = (api.getState() as typeof state).newProduct;
-    // Se revisa de nuevo: en la espera pudo empezar una edición (Fase 4), que no es borrador.
     if (draft.productId && !draft.published && draft.mode !== "edit") {
       saveDraftFile(slug, toSavedDraft(draft));
     }
@@ -46,8 +59,14 @@ draftListener.startListening({
 
 export const store = configureStore({
   reducer: rootReducer,
-  middleware: (getDefault) => getDefault().prepend(draftListener.middleware),
+  middleware: (getDefault) =>
+    getDefault().prepend(draftListener.middleware, toastListener.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// Fase 6 / 05: cualquier petición que responda 401 muestra "Tu sesión expiró".
+setUnauthorizedHandler(() => {
+  if (store.getState().auth.session) store.dispatch(sessionExpired());
+});

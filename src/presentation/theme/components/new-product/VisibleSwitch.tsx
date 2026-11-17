@@ -1,18 +1,24 @@
 import { Colors, iconStroke, radius, touchTarget } from "@/config/theme/theme";
 import { Lock } from "lucide-react-native";
-import { Pressable, Switch, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Switch, View } from "react-native";
 
 interface Props {
   value: boolean;
   onChange: (value: boolean) => void;
-  // Bloqueado (sin precio o última variante visible): se muestra el candado del Figma.
+
   locked?: boolean;
-  // Si el candado explica algo al tocarlo (Fase 3 / 29).
+
   onLockedPress?: () => void;
   label: string;
 }
 
-const VisibleSwitch = ({ value, onChange, locked = false, onLockedPress, label }: Props) => {
+const VisibleSwitch = ({
+  value,
+  onChange,
+  locked = false,
+  onLockedPress,
+  label,
+}: Props) => {
   if (locked) {
     return (
       <Pressable
@@ -21,11 +27,18 @@ const VisibleSwitch = ({ value, onChange, locked = false, onLockedPress, label }
         style={styles.container}
         accessibilityRole="switch"
         accessibilityLabel={label}
-        accessibilityHint={onLockedPress ? "Explica por qué no se puede cambiar" : undefined}
+        accessibilityHint={
+          onLockedPress ? "Explica por qué no se puede cambiar" : undefined
+        }
         accessibilityState={{ disabled: true, checked: value }}
       >
         <View style={styles.locked}>
-          <Lock size={14} color={Colors.textSecondary} strokeWidth={iconStroke} absoluteStrokeWidth />
+          <Lock
+            size={14}
+            color={Colors.textSecondary}
+            strokeWidth={iconStroke}
+            absoluteStrokeWidth
+          />
         </View>
       </Pressable>
     );

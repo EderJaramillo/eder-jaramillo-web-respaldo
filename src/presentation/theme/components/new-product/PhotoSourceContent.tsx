@@ -1,5 +1,9 @@
 import { Colors, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { fetchSavedImages, newKey, type DraftPhoto } from "@/features/products/newProductSlice";
+import {
+  fetchSavedImages,
+  newKey,
+  type DraftPhoto,
+} from "@/features/products/newProductSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -12,11 +16,13 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Linking, Modal, Pressable, StyleSheet, View } from "react-native";
 import InfoBanner from "../InfoBanner";
+import PermissionView from "../PermissionView";
 import ThemedButton from "../ThemedButton";
 import ThemedText from "../ThemedText";
 import ThemedTextInput from "../ThemedTextInput";
+import CameraCaptureModal from "./CameraCaptureModal";
 import SheetCard from "./SheetCard";
 
 type Mode = "menu" | "url" | "existing";
@@ -37,8 +43,6 @@ const toPhoto = (uri: string, source: DraftPhoto["source"]): DraftPhoto => ({
 
 const isImageUrl = (text: string) => /^https?:\/\/\S+$/i.test(text.trim());
 
-// Fase 3 / 16 (agregar foto), 17 (pegar enlace) y 18 (usar foto ya subida).
-// Es solo el contenido: lo usa la hoja de fotos y la hoja de "Agregar modelo".
 const PhotoSourceContent = ({ modelName, remaining, onAdd, onDone }: Props) => {
   const dispatch = useAppDispatch();
   const { savedImages, isSaving } = useAppSelector((s) => s.newProduct);
@@ -52,17 +56,13 @@ const PhotoSourceContent = ({ modelName, remaining, onAdd, onDone }: Props) => {
     onDone();
   };
 
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Sin permiso", "Necesitamos tu cámara para tomar la foto.");
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.8 });
-    if (!result.canceled) finish(result.assets.map((a) => toPhoto(a.uri, "device")));
-  };
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const takePhoto = () => setIsCameraOpen(true);
 
-  const pickFromGallery = async () => {
+  const [libraryAsk, setLibraryAsk] = useState<"ask" | "blocked" | null>(null);
+
+  const openLibrary = async () => {
+    setLibraryAsk(null);
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
@@ -70,8 +70,22 @@ const PhotoSourceContent = ({ modelName, remaining, onAdd, onDone }: Props) => {
       quality: 0.8,
     });
     if (!result.canceled) {
-      finish(result.assets.slice(0, remaining).map((a) => toPhoto(a.uri, "device")));
+      finish(
+        result.assets.slice(0, remaining).map((a) => toPhoto(a.uri, "device")),
+      );
     }
+  };
+
+  const pickFromGallery = async () => {
+    const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+    if (current.granted) return openLibrary();
+    setLibraryAsk(current.canAskAgain ? "ask" : "blocked");
+  };
+
+  const requestLibrary = async () => {
+    const answer = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (answer.granted) return openLibrary();
+    setLibraryAsk(answer.canAskAgain ? null : "blocked");
   };
 
   const openExisting = () => {
@@ -79,7 +93,12 @@ const PhotoSourceContent = ({ modelName, remaining, onAdd, onDone }: Props) => {
     dispatch(fetchSavedImages());
   };
 
-  const options: { icon: LucideIcon; title: string; subtitle?: string; onPress: () => void }[] = [
+  const options: {
+    icon: LucideIcon;
+    title: string;
+    subtitle?: string;
+    onPress: () => void;
+  }[] = [
     { icon: Camera, title: "Tomar foto", onPress: takePhoto },
     {
       icon: Images,
@@ -112,7 +131,11 @@ const PhotoSourceContent = ({ modelName, remaining, onAdd, onDone }: Props) => {
           disabled={!isImageUrl(url)}
           onPress={() => finish([toPhoto(url.trim(), "url")])}
         />
-        <ThemedButton title="Volver" variant="text" onPress={() => setMode("menu")} />
+        <ThemedButton
+          title="Volver"
+          variant="text"
+          onPress={() => setMode("menu")}
+        />
       </SheetCard>
     );
   }
@@ -131,12 +154,19 @@ const PhotoSourceContent = ({ modelName, remaining, onAdd, onDone }: Props) => {
               <Pressable
                 key={img.url}
                 onPress={() => setSelectedUrl(img.url)}
-                style={[styles.thumb, img.url === selectedUrl && styles.thumbSelected]}
+                style={[
+                  styles.thumb,
+                  img.url === selectedUrl && styles.thumbSelected,
+                ]}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: img.url === selectedUrl }}
                 accessibilityLabel={`Foto de ${img.modelName || "un modelo"}`}
               >
-                <Image source={img.url} style={styles.thumbImage} contentFit="cover" />
+                <Image
+                  source={img.url}
+                  style={styles.thumbImage}
+                  contentFit="cover"
+                />
               </Pressable>
             ))}
           </View>
@@ -149,21 +179,82 @@ const PhotoSourceContent = ({ modelName, remaining, onAdd, onDone }: Props) => {
         <ThemedButton
           title="Usar foto seleccionada"
           disabled={!selected}
-          onPress={() => selected && finish([toPhoto(selected.url, "existing")])}
+          onPress={() =>
+            selected && finish([toPhoto(selected.url, "existing")])
+          }
         />
-        <ThemedButton title="Volver" variant="text" onPress={() => setMode("menu")} />
+        <ThemedButton
+          title="Volver"
+          variant="text"
+          onPress={() => setMode("menu")}
+        />
       </SheetCard>
     );
   }
 
   return (
-    <SheetCard title={modelName ? `Agregar foto · ${modelName}` : "Agregar foto"}>
+    <SheetCard
+      title={modelName ? `Agregar foto · ${modelName}` : "Agregar foto"}
+    >
+      <Modal
+        visible={libraryAsk !== null}
+        animationType="slide"
+        onRequestClose={() => setLibraryAsk(null)}
+      >
+        {libraryAsk === "blocked" ? (
+          <PermissionView
+            barTitle="Permisos de fotos"
+            icon={ImageIcon}
+            title="El acceso está desactivado"
+            description="Activa Cámara y Fotos en los ajustes de tu teléfono para agregar imágenes a tus productos."
+            privacyNote
+            actionLabel="Abrir ajustes"
+            onAction={() => Linking.openSettings()}
+            onDismiss={() => setLibraryAsk(null)}
+          />
+        ) : (
+          <PermissionView
+            barTitle="Permisos de fotos"
+            icon={ImageIcon}
+            title="Permite elegir tus fotos"
+            description="Elige las fotos que quieras compartir con Suajam. Puedes seleccionar varias a la vez."
+            privacyNote
+            systemNote
+            actionLabel="Elegir acceso a fotos"
+            onAction={requestLibrary}
+            onDismiss={() => setLibraryAsk(null)}
+          />
+        )}
+      </Modal>
+      <CameraCaptureModal
+        visible={isCameraOpen}
+        modelName={modelName}
+        remaining={remaining}
+        onClose={() => setIsCameraOpen(false)}
+        onDone={(photos) => {
+          setIsCameraOpen(false);
+          if (photos.length) finish(photos);
+        }}
+      />
       {remaining <= 0 ? (
-        <InfoBanner tone="warning" message="Este modelo ya tiene 5 fotos. Quita una para agregar otra." />
+        <InfoBanner
+          tone="warning"
+          message="Este modelo ya tiene 5 fotos. Quita una para agregar otra."
+        />
       ) : (
         options.map(({ icon: Icon, title, subtitle, onPress }) => (
-          <Pressable key={title} style={styles.option} accessibilityRole="button" onPress={onPress}>
-            <Icon size={24} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+          <Pressable
+            key={title}
+            style={styles.option}
+            accessibilityRole="button"
+            onPress={onPress}
+          >
+            <Icon
+              size={24}
+              color={Colors.primary}
+              strokeWidth={iconStroke}
+              absoluteStrokeWidth
+            />
             <View style={styles.text}>
               <ThemedText variant="bodyMedium">{title}</ThemedText>
               {subtitle && (

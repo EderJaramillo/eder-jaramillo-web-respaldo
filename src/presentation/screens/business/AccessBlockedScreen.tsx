@@ -21,7 +21,6 @@ const messages: Record<BlockReason, { title: string; description: string }> = {
   },
 };
 
-// "Volver" cierra la sesión: al quedar sin sesión, el layout regresa al login.
 const AccessBlockedScreen = () => {
   const dispatch = useAppDispatch();
   const reason = useAppSelector((s) => s.auth.blockReason) ?? "no-business";

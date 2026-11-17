@@ -10,7 +10,6 @@ interface Props {
 
 const cleanAmount = (text: string) => text.replace(/[^0-9.]/g, "");
 
-// Campo de dinero con el "$" del Figma (Costo / Precio de venta).
 const AmountField = ({ label, value, onChange }: Props) => (
   <View style={styles.field}>
     <ThemedText variant="label">{label}</ThemedText>

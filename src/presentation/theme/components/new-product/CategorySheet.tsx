@@ -1,5 +1,8 @@
 import { Colors, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { createCategory, updateDraft } from "@/features/products/newProductSlice";
+import {
+  createCategory,
+  updateDraft,
+} from "@/features/products/newProductSlice";
 import { fetchCategories } from "@/features/products/productsSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Circle, CircleDot, Plus } from "lucide-react-native";
@@ -25,7 +28,6 @@ interface Props {
   onClose: () => void;
 }
 
-// Fase 3 / 03 (elegir) y 04 (crear): las dos vistas viven en el mismo bottom sheet.
 const CategorySheet = ({ visible, onClose }: Props) => {
   const dispatch = useAppDispatch();
   const { bottom } = useSafeAreaInsets();
@@ -37,7 +39,6 @@ const CategorySheet = ({ visible, onClose }: Props) => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
 
-  // Cada vez que se abre empieza en "elegir" con la categoría actual marcada.
   const onShow = () => {
     setMode("pick");
     setQuery("");
@@ -75,11 +76,22 @@ const CategorySheet = ({ visible, onClose }: Props) => {
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <Pressable style={styles.overlay} onPress={onClose} accessibilityLabel="Cerrar" />
+        <Pressable
+          style={styles.overlay}
+          onPress={onClose}
+          accessibilityLabel="Cerrar"
+        />
 
-        <View style={[styles.sheet, { paddingBottom: Math.max(bottom, spacing.lg) }]}>
+        <View
+          style={[
+            styles.sheet,
+            { paddingBottom: Math.max(bottom, spacing.lg) },
+          ]}
+        >
           <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
-            <SheetCard title={isPicking ? "Elige una categoría" : "Crear categoría"}>
+            <SheetCard
+              title={isPicking ? "Elige una categoría" : "Crear categoría"}
+            >
               {isPicking ? (
                 <>
                   <ThemedTextInput
@@ -103,11 +115,15 @@ const CategorySheet = ({ visible, onClose }: Props) => {
                       >
                         <Icon
                           size={24}
-                          color={isSelected ? Colors.primary : Colors.textSecondary}
+                          color={
+                            isSelected ? Colors.primary : Colors.textSecondary
+                          }
                           strokeWidth={iconStroke}
                           absoluteStrokeWidth
                         />
-                        <ThemedText variant="bodyMedium">{item.name}</ThemedText>
+                        <ThemedText variant="bodyMedium">
+                          {item.name}
+                        </ThemedText>
                       </Pressable>
                     );
                   })}
@@ -137,7 +153,11 @@ const CategorySheet = ({ visible, onClose }: Props) => {
               )}
 
               {isPicking ? (
-                <ThemedButton title="Elegir categoría" disabled={!selectedId} onPress={onChoose} />
+                <ThemedButton
+                  title="Elegir categoría"
+                  disabled={!selectedId}
+                  onPress={onChoose}
+                />
               ) : (
                 <>
                   <ThemedButton
@@ -147,7 +167,11 @@ const CategorySheet = ({ visible, onClose }: Props) => {
                     disabled={!newName.trim()}
                     onPress={onCreate}
                   />
-                  <ThemedButton title="Volver" variant="text" onPress={() => setMode("pick")} />
+                  <ThemedButton
+                    title="Volver"
+                    variant="text"
+                    onPress={() => setMode("pick")}
+                  />
                 </>
               )}
             </SheetCard>

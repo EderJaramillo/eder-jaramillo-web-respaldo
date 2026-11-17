@@ -32,7 +32,9 @@ export interface Presentation {
 }
 
 // GET /catalog/products/{id}/: aquí category llega como id, no como objeto.
-export type ProductDetail = Omit<Product, "category"> & { category: number | null };
+export type ProductDetail = Omit<Product, "category"> & {
+  category: number | null;
+};
 
 export type VisibilityFilter = "all" | "visible" | "hidden" | "incomplete";
 
@@ -47,7 +49,6 @@ export const productTypes = [
   { id: 3, label: "Modelos con variantes" },
 ];
 
-// Figma: 25 productos. La API no expone el límite del plan.
 export const PRODUCT_LIMIT = 25;
 
 export const isIncomplete = (product: Product) => !product.type;
@@ -68,9 +69,14 @@ function parseMainModel(product: Product): unknown {
 }
 
 export function getProductPrice(product: Product): number | null {
-  const model = parseMainModel(product) as { presentations?: unknown; price?: unknown } | null;
+  const model = parseMainModel(product) as {
+    presentations?: unknown;
+    price?: unknown;
+  } | null;
   if (!model || typeof model !== "object") return null;
-  const presentations = Array.isArray(model.presentations) ? model.presentations : [model];
+  const presentations = Array.isArray(model.presentations)
+    ? model.presentations
+    : [model];
   const prices = presentations
     .map((p: { price?: unknown }) => Number(p?.price))
     .filter((price) => Number.isFinite(price) && price > 0);

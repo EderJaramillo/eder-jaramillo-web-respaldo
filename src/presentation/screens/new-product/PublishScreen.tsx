@@ -5,21 +5,23 @@ import {
   updateDraft,
 } from "@/features/products/newProductSlice";
 import InfoBanner from "@/presentation/theme/components/InfoBanner";
-import ExtrasSheet from "@/presentation/theme/components/new-product/ExtrasSheet";
 import DescriptionField from "@/presentation/theme/components/new-product/DescriptionField";
+import ExtrasSheet from "@/presentation/theme/components/new-product/ExtrasSheet";
 import NewProductLayout, {
   useLeaveNewProduct,
 } from "@/presentation/theme/components/new-product/NewProductLayout";
 import ThemedButton from "@/presentation/theme/components/ThemedButton";
 import ThemedText from "@/presentation/theme/components/ThemedText";
 import ThemedTextInput from "@/presentation/theme/components/ThemedTextInput";
+import ValidationSummary, {
+  type Issue,
+} from "@/presentation/theme/components/ValidationSummary";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { router } from "expo-router";
 import { ChevronRight, Circle, CircleCheck } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 
-// "fotos, un precio y la descripción" a partir de lo que falta.
 function missingMessage(labels: string[]) {
   const names: Record<string, string> = {
     "Nombre y categoría": "el nombre y la categoría",
@@ -29,17 +31,28 @@ function missingMessage(labels: string[]) {
     Descripción: "la descripción",
   };
   const parts = labels.map((label) => names[label] ?? label.toLowerCase());
-  const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} y ${parts.at(-1)}` : parts[0];
+  const list =
+    parts.length > 1
+      ? `${parts.slice(0, -1).join(", ")} y ${parts.at(-1)}`
+      : parts[0];
   return `Agrega ${list} para publicar.`;
 }
 
-// Fase 3 / 34 (incompleta) y 35 (válida).
+const issueText: Record<string, string> = {
+  basics: "Agrega el nombre y la categoría",
+  type: "Elige cómo vendes este producto",
+  photo: "Agrega al menos una foto",
+  price: "No se puede activar: agrega al menos un precio",
+  description: "Agrega la descripción del producto",
+};
+
 const PublishScreen = () => {
   const dispatch = useAppDispatch();
   const draft = useAppSelector((s) => s.newProduct);
   const leave = useLeaveNewProduct();
   const [action, setAction] = useState<"publish" | "hide" | null>(null);
   const [touched, setTouched] = useState(false);
+  const [issues, setIssues] = useState<Issue[]>([]);
   const [isExtrasOpen, setIsExtrasOpen] = useState(false);
 
   const checklist = getPublishChecklist(draft);
@@ -51,13 +64,24 @@ const PublishScreen = () => {
     setAction(publish ? "publish" : "hide");
     const result = await dispatch(publishProduct({ publish }));
     setAction(null);
-    if (!publishProduct.fulfilled.match(result)) return;
+    if (!publishProduct.fulfilled.match(result)) {
+      // Fase 6 / 08: lo que dijo el servidor y lo que falta del checklist, todo junto.
+      setIssues([
+        ...(result.payload ? [{ message: result.payload }] : []),
+        ...missing.map((item) => ({
+          message: issueText[item.key] ?? `Falta: ${item.label}`,
+        })),
+      ]);
+      return;
+    }
     if (publish) {
       router.replace("/new-product/published");
     } else {
-      Alert.alert("Producto guardado", "Quedó oculto. Puedes publicarlo después.", [
-        { text: "Entendido", onPress: leave },
-      ]);
+      Alert.alert(
+        "Producto guardado",
+        "Quedó oculto. Puedes publicarlo después.",
+        [{ text: "Entendido", onPress: leave }],
+      );
     }
   };
 
@@ -131,7 +155,9 @@ const PublishScreen = () => {
           accessibilityRole="button"
         >
           <View style={styles.flex}>
-            <ThemedText variant="bodyMedium">Impuestos, canales y más</ThemedText>
+            <ThemedText variant="bodyMedium">
+              Impuestos, canales y más
+            </ThemedText>
             <ThemedText variant="caption" color={Colors.textSecondary}>
               Filtros, etiquetas y documentos
             </ThemedText>
@@ -144,9 +170,20 @@ const PublishScreen = () => {
           />
         </Pressable>
       ) : (
-        <InfoBanner tone="error" message={missingMessage(missing.map((m) => m.label))} />
+        <InfoBanner
+          tone="error"
+          message={missingMessage(missing.map((m) => m.label))}
+        />
       )}
-      <ExtrasSheet visible={isExtrasOpen} onClose={() => setIsExtrasOpen(false)} />
+      <ExtrasSheet
+        visible={isExtrasOpen}
+        onClose={() => setIsExtrasOpen(false)}
+      />
+      <ValidationSummary
+        visible={issues.length > 0}
+        issues={issues}
+        onClose={() => setIssues([])}
+      />
     </NewProductLayout>
   );
 };

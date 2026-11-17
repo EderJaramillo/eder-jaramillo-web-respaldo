@@ -1,5 +1,16 @@
-import { Colors, fonts, iconStroke, radius, spacing } from "@/config/theme/theme";
-import { hasOffer, isOfferValid, type Offer } from "@/features/products/newProductSlice";
+import {
+  Colors,
+  fonts,
+  iconStroke,
+  radius,
+  spacing,
+} from "@/config/theme/theme";
+import {
+  hasOffer,
+  isOfferValid,
+  type Offer,
+} from "@/features/products/newProductSlice";
+import { useAppSelector } from "@/store/hooks";
 import { BadgePercent, ChevronRight } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -8,20 +19,20 @@ import ThemedButton from "../ThemedButton";
 import ThemedCheckbox from "../ThemedCheckbox";
 import ThemedText from "../ThemedText";
 import BottomSheet from "./BottomSheet";
-import { useAppSelector } from "@/store/hooks";
 import PricePreview, { money, withTaxes } from "./PricePreview";
 import SheetCard from "./SheetCard";
 
 const describeOffer = (offer: Offer) => {
   if (!hasOffer(offer)) return "Sin descuento · 0%";
-  const channels = [offer.onStore && "Tienda en línea", offer.onPos && "Punto de venta"]
+  const channels = [
+    offer.onStore && "Tienda en línea",
+    offer.onPos && "Punto de venta",
+  ]
     .filter(Boolean)
     .join(" y ");
   return `${Number(offer.discount)}% · ${channels}`;
 };
 
-// Fase 3 / 33: "Refresco 600 ml: $25 + IEPS 8% + IVA 16% = $31.32. Elige un canal para
-// aplicar el 10% después de impuestos." El descuento siempre va sobre el precio con impuestos.
 function offerNote(
   name: string,
   price: number,
@@ -33,24 +44,49 @@ function offerNote(
   if (taxes.ieps > 0) parts.push(`IEPS ${taxes.ieps}%`);
   if (taxes.iva > 0) parts.push(`IVA ${taxes.iva}%`);
   let text = `${name}: ${parts.join(" + ")}`;
-  text += parts.length > 1 ? ` = ${money(withTaxes(price, taxes).total)}.` : " sin impuestos.";
+  text +=
+    parts.length > 1
+      ? ` = ${money(withTaxes(price, taxes).total)}.`
+      : " sin impuestos.";
   const discount = Number(offer.discount);
-  if (needsChannel) text += ` Elige un canal para aplicar el ${discount}% después de impuestos.`;
-  else if (hasOffer(offer)) text += ` El ${discount}% se aplica después de impuestos.`;
+  if (needsChannel)
+    text += ` Elige un canal para aplicar el ${discount}% después de impuestos.`;
+  else if (hasOffer(offer))
+    text += ` El ${discount}% se aplica después de impuestos.`;
   return text;
 }
 
-// Fila "Oferta" que abre la hoja de descuento.
-export const OfferRow = ({ offer, onPress }: { offer: Offer; onPress: () => void }) => (
-  <Pressable onPress={onPress} style={styles.row} accessibilityRole="button" accessibilityLabel="Oferta">
-    <BadgePercent size={24} color={Colors.primary} strokeWidth={iconStroke} absoluteStrokeWidth />
+export const OfferRow = ({
+  offer,
+  onPress,
+}: {
+  offer: Offer;
+  onPress: () => void;
+}) => (
+  <Pressable
+    onPress={onPress}
+    style={styles.row}
+    accessibilityRole="button"
+    accessibilityLabel="Oferta"
+  >
+    <BadgePercent
+      size={24}
+      color={Colors.primary}
+      strokeWidth={iconStroke}
+      absoluteStrokeWidth
+    />
     <View style={styles.flex}>
       <ThemedText variant="bodyMedium">Oferta</ThemedText>
       <ThemedText variant="caption" color={Colors.textSecondary}>
         {describeOffer(offer)}
       </ThemedText>
     </View>
-    <ChevronRight size={24} color={Colors.textSecondary} strokeWidth={iconStroke} absoluteStrokeWidth />
+    <ChevronRight
+      size={24}
+      color={Colors.textSecondary}
+      strokeWidth={iconStroke}
+      absoluteStrokeWidth
+    />
   </Pressable>
 );
 
@@ -62,7 +98,6 @@ interface Props {
   onClose: () => void;
 }
 
-// Fase 3 / 30: descuento por canal.
 const OfferSheet = ({ visible, price, offer, onSave, onClose }: Props) => {
   const [draft, setDraft] = useState(offer);
   const { name, ivaRate, iepsRate } = useAppSelector((s) => s.newProduct);
@@ -70,11 +105,17 @@ const OfferSheet = ({ visible, price, offer, onSave, onClose }: Props) => {
 
   const discount = Number(draft.discount);
   const discountError =
-    draft.discount !== "" && (discount < 0 || discount > 100) ? "Puedes aplicar de 0 a 100%." : null;
+    draft.discount !== "" && (discount < 0 || discount > 100)
+      ? "Puedes aplicar de 0 a 100%."
+      : null;
   const needsChannel = hasOffer(draft) && !draft.onStore && !draft.onPos;
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} onShow={() => setDraft(offer)}>
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      onShow={() => setDraft(offer)}
+    >
       <SheetCard title="Descuento por canal">
         <View style={styles.field}>
           <ThemedText variant="label">Descuento</ThemedText>
@@ -82,7 +123,9 @@ const OfferSheet = ({ visible, price, offer, onSave, onClose }: Props) => {
             <TextInput
               style={styles.text}
               value={draft.discount}
-              onChangeText={(text) => setDraft({ ...draft, discount: text.replace(/[^0-9]/g, "") })}
+              onChangeText={(text) =>
+                setDraft({ ...draft, discount: text.replace(/[^0-9]/g, "") })
+              }
               keyboardType="number-pad"
               placeholder="0"
               placeholderTextColor={Colors.textSecondary}
@@ -91,7 +134,10 @@ const OfferSheet = ({ visible, price, offer, onSave, onClose }: Props) => {
             />
             <Text style={styles.suffix}>%</Text>
           </View>
-          <ThemedText variant="caption" color={discountError ? Colors.danger : Colors.textSecondary}>
+          <ThemedText
+            variant="caption"
+            color={discountError ? Colors.danger : Colors.textSecondary}
+          >
             {discountError ?? "Puedes aplicar de 0 a 100%."}
           </ThemedText>
         </View>
@@ -108,10 +154,15 @@ const OfferSheet = ({ visible, price, offer, onSave, onClose }: Props) => {
           onChange={(onPos) => setDraft({ ...draft, onPos })}
         />
         {needsChannel && (
-          <InfoBanner tone="error" message="Selecciona al menos un canal para aplicar el descuento." />
+          <InfoBanner
+            tone="error"
+            message="Selecciona al menos un canal para aplicar el descuento."
+          />
         )}
 
-        {price > 0 && <PricePreview price={price} offer={draft} taxes={taxes} />}
+        {price > 0 && (
+          <PricePreview price={price} offer={draft} taxes={taxes} />
+        )}
         {price > 0 && (
           <ThemedText variant="caption" color={Colors.textSecondary}>
             {offerNote(name.trim(), price, taxes, draft, needsChannel)}
